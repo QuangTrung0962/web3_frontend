@@ -106,23 +106,6 @@ const DesktopNavigation = () => {
                     />
                   </Tooltip>
                 </li>
-                <li
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyItems: "center",
-                  }}
-                  onClick={() => handleClickOpen(setOpenAlert)}
-                >
-                  <Button
-                    variant="contained"
-                    className="nav-icon-span"
-                    sx={{ marginBottom: 1 }}
-                    endIcon={<FiLogOut />}
-                  >
-                    <Typography variant="button">Thoát</Typography>
-                  </Button>
-                </li>
               </>
             ) : (
               <li className="nav-links">
@@ -139,6 +122,7 @@ const DesktopNavigation = () => {
           </ul>
         </div>
       </nav>
+
       <Dialog
         open={openAlert}
         TransitionComponent={Transition}

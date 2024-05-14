@@ -14,13 +14,15 @@ import { AiFillDelete } from "react-icons/ai";
 import styles from "./CartCard.module.css";
 import { numberWithCommas } from "../../../Constants/Constant";
 
-const CartCard = ({ product, removeFromCart }) => {
+const CartCard = ({ product, removeFromCart, quantity }) => {
+  //Check quantity
+  const matchingItem = quantity.find(
+    (item) => item.id === product.id.toString()
+  );
+
   return (
     <Card className={styles.main_cart}>
-      <Link
-        //to={`/Detail/type/${product?.productId?.type}/${product?.productId?._id}`}
-        to={`/product/${product?.id}`}
-      >
+      <Link to={`/product/${product?.id}`}>
         <CardActionArea className={styles.card_action}>
           <Box className={styles.img_box}>
             <img
@@ -46,18 +48,19 @@ const CartCard = ({ product, removeFromCart }) => {
                 },
               }}
             >
-              {product.quantity && (
+              {matchingItem && (
                 <Button>
-                  {" "}
                   <Typography variant="body2" color="black">
-                    Số lượng {" " + product.quantity}{" "}
+                    Số lượng: {matchingItem.quantity}
                   </Typography>
                 </Button>
               )}
+
               <Typography
                 gutterBottom
                 variant="h6"
                 sx={{ textAlign: "center" }}
+                style={{ color: "red" }}
               >
                 {numberWithCommas(product.price.toString())}đ
               </Typography>

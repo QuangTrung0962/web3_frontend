@@ -22,8 +22,16 @@ export let customerReview =
   "https://res.cloudinary.com/dxguqzge7/image/upload/v1682838911/Review_bm6chw.jpg";
 
 export let Samsung =
-  "https://images.samsung.com/is/image/samsung/assets/vn/about-us/brand/logo/mo/256_144_1.png?$512_N_PNG$";
+  "https://static.vecteezy.com/system/resources/previews/014/018/566/non_2x/samsung-logo-on-transparent-background-free-vector.jpg";
 export let Apple =
   "https://thumbs.dreamstime.com/b/apple-logo-editorial-illustrative-white-background-eps-download-vector-jpeg-banner-ai-apple-logo-editorial-illustrative-208329125.jpg";
 export let Xiaomi =
+  "https://inansaigon.vn/ckfinder/userfiles/images/logo-xiaomi-3.png";
+export let Oppo =
+  "https://inansaigon.vn/ckfinder/userfiles/images/logo-xiaomi-3.png";
+export let Nokia =
+  "https://inansaigon.vn/ckfinder/userfiles/images/logo-xiaomi-3.png";
+export let Vivo =
+  "https://inansaigon.vn/ckfinder/userfiles/images/logo-xiaomi-3.png";
+export let Realme =
   "https://inansaigon.vn/ckfinder/userfiles/images/logo-xiaomi-3.png";

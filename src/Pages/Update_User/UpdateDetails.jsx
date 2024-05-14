@@ -25,9 +25,13 @@ import { toast } from "react-toastify";
 import { RiEyeFill, RiEyeOffFill } from "react-icons/ri";
 import { TiArrowBackOutline } from "react-icons/ti";
 
-import { Transition, getUser } from "../../Constants/Constant";
+import {
+  CONTRACT_AUTH_ADDRESS,
+  Transition,
+  getUser,
+} from "../../Constants/Constant";
 import CopyRight from "../../Components/CopyRight/CopyRight";
-import { useAddress } from "@thirdweb-dev/react";
+import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
 
 const UpdateDetails = () => {
   const [userData, setUserData] = useState([]);
@@ -37,121 +41,125 @@ const UpdateDetails = () => {
 
   const address = useAddress();
   address !== undefined ? (setProceed = true) : (setProceed = false);
+  const { contract } = useContract(CONTRACT_AUTH_ADDRESS);
+  const { mutateAsync: editUser, isError: editUserError } = useContractWrite(
+    contract,
+    "editUser"
+  );
 
-  const [userDetails, setUserDetails] = useState({
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    email: "",
-    province: "",
-    district: "",
-    ward: "",
-    detail: "",
-  });
-  //   const [password, setPassword] = useState({
-  //     currentPassword: "",
-  //     newPassword: "",
-  //   });
-  //   const [showPassword, setShowPassword] = useState(false);
-  //   const [showNewPassword, setShowNewPassword] = useState(false);
-  //   const handleClickShowPassword = () => {
-  //     setShowPassword(!showPassword);
-  //   };
+  // const [userDetails, setUserDetails] = useState({
+  //   firstName: "",
+  //   lastName: "",
+  //   phoneNumber: "",
+  //   email: "",
+  //   province: "",
+  //   district: "",
+  //   ward: "",
+  //   detail: "",
+  // });
 
   let navigate = useNavigate();
   useEffect(() => {
-    setProceed ? getUserData() : navigate("/");
+    if (setProceed) {
+      getUserData();
+    } else {
+      navigate("/");
+    }
   }, []);
 
   const getUserData = async () => {
     try {
       getUser(address, setUserData);
-      userDetails.firstName = userData.firstName ?? "";
-      userDetails.lastName = userData.lastName ?? "";
-      userDetails.email = userData.email ?? "";
-      userDetails.phoneNumber = userData.phoneNumber ?? "";
-      userDetails.province = userData.province ?? "";
-      userDetails.district = userData.district ?? "";
-      userDetails.ward = userData.ward ?? "";
-      userDetails.detail = userData.detail ?? "";
     } catch (error) {
       toast.error("Something went wrong", { autoClose: 500, theme: "colored" });
     }
   };
   const handleOnchange = (e) => {
-    setUserDetails({ ...userDetails, [e.target.name]: e.target.value });
+    setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
-  let phoneRegex = /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[789]\d{9}$/;
+  let phoneRegex = /^(?:\+84|0)(?:3\d{8}|5\d{8}|7\d{8}|8\d{8}|9\d{8}|2\d{9})$/;
   let emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (
-        !userDetails.email &&
-        !userDetails.firstName &&
-        !userDetails.phoneNumber &&
-        !userDetails.lastName &&
-        !userDetails.province &&
-        !userDetails.district &&
-        !userDetails.ward &&
-        !userDetails.detail
+        !userData.email &&
+        !userData.firstName &&
+        !userData.phoneNumber &&
+        !userData.lastName &&
+        !userData.province &&
+        !userData.district &&
+        !userData.ward &&
+        !userData.detail
       ) {
         toast.error("Hãy điền tất cả các trường", {
           autoClose: 500,
           theme: "colored",
         });
       } else if (
-        userDetails.firstName.length < 3 ||
-        userDetails.lastName.length < 3
+        userData.firstName.length < 3 ||
+        userData.lastName.length < 3
       ) {
         toast.error("Tên phải dài hơn 3 kí tự", {
           autoClose: 500,
           theme: "colored",
         });
-      } else if (!emailRegex.test(userDetails.email)) {
+      } else if (!emailRegex.test(userData.email)) {
         toast.error("Hãy điền email chính xác", {
           autoClose: 500,
           theme: "colored",
         });
-      } else if (!phoneRegex.test(userDetails.phoneNumber)) {
+      } else if (!phoneRegex.test(userData.phoneNumber)) {
         toast.error("Hãy điền SĐT chính xác", {
           autoClose: 500,
           theme: "colored",
         });
-      } else if (!userDetails.address) {
-        toast.error("Please add address", { autoClose: 500, theme: "colored" });
-      } else if (!userDetails.city) {
-        toast.error("Please add city", { autoClose: 500, theme: "colored" });
-      } else if (!userDetails.zipCode) {
-        toast.error("Please enter valid Zip code", {
+      } else if (!userData.province) {
+        toast.error("Hãy điền Tỉnh/Thành phố", {
           autoClose: 500,
           theme: "colored",
         });
-      } else if (!userDetails.userState) {
-        toast.error("Please add state", { autoClose: 500, theme: "colored" });
+      } else if (!userData.district) {
+        toast.error("Hãy điền Quận/Huyện", {
+          autoClose: 500,
+          theme: "colored",
+        });
+      } else if (!userData.ward) {
+        toast.error("Hãy điền Phường/Xã", {
+          autoClose: 500,
+          theme: "colored",
+        });
+      } else if (!userData.detail) {
+        toast.error("Hãy điền địa chỉ chi tiêt", {
+          autoClose: 500,
+          theme: "colored",
+        });
       } else {
-        const { data } = await axios.put(
-          `${process.env.REACT_APP_UPDATE_USER_DETAILS}`,
-          {
-            userDetails: JSON.stringify(userDetails),
-          },
-          {
-            headers: {
-              Authorization: authToken,
-            },
-          }
-        );
+        await editUser({
+          args: [
+            address,
+            userData.firstName,
+            userData.lastName,
+            userData.email,
+            userData.phoneNumber,
+            userData.province,
+            userData.district,
+            userData.ward,
+            userData.detail,
+          ],
+        });
 
-        if (data.success === true) {
-          toast.success("Updated Successfully", {
+        if (!editUserError) {
+          toast.success("Cập nhật thành công", {
             autoClose: 500,
             theme: "colored",
           });
-          getUserData();
+          //getUserData();
+          navigate("/checkout");
         } else {
-          toast.error("Something went wrong", {
+          toast.error("Xảy ra lỗi 1", {
             autoClose: 500,
             theme: "colored",
           });
@@ -258,7 +266,7 @@ const UpdateDetails = () => {
               <TextField
                 label="Tên"
                 name="firstName"
-                value={userDetails.firstName || ""}
+                value={userData.firstName || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -266,9 +274,9 @@ const UpdateDetails = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Họ"
+                label="Họ đệm"
                 name="lastName"
-                value={userDetails.lastName || ""}
+                value={userData.lastName || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -279,7 +287,7 @@ const UpdateDetails = () => {
                 label="SĐT"
                 type="tel"
                 name="phoneNumber"
-                value={userDetails.phoneNumber || ""}
+                value={userData.phoneNumber || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -289,7 +297,7 @@ const UpdateDetails = () => {
               <TextField
                 label="Email"
                 name="email"
-                value={userDetails.email || ""}
+                value={userData.email || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -298,8 +306,8 @@ const UpdateDetails = () => {
             <Grid item xs={12}>
               <TextField
                 label="Tỉnh/Thành phố"
-                name="address"
-                value={userDetails.address || ""}
+                name="province"
+                value={userData.province || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -308,8 +316,8 @@ const UpdateDetails = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Quận/Huyện"
-                name="city"
-                value={userDetails.city || ""}
+                name="district"
+                value={userData.district || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -319,8 +327,8 @@ const UpdateDetails = () => {
               <TextField
                 type="tel"
                 label="Xã/Phường"
-                name="zipCode"
-                value={userDetails.zipCode || ""}
+                name="ward"
+                value={userData.ward || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -329,8 +337,8 @@ const UpdateDetails = () => {
             <Grid item xs={12}>
               <TextField
                 label="Địa chỉ chi tiết"
-                name="userState"
-                value={userDetails.userState || ""}
+                name="detail"
+                value={userData.detail || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -465,45 +473,7 @@ const UpdateDetails = () => {
           </Button>
         </Box> */}
 
-        <Dialog
-          open={openAlert}
-          TransitionComponent={Transition}
-          keepMounted
-          onClose={() => setOpenAlert(false)}
-          aria-describedby="alert-dialog-slide-description"
-        >
-          {/* <DialogTitle>{"Use Google's location service?"}</DialogTitle> */}
-          <DialogContent sx={{ width: { xs: 280, md: 350, xl: 400 } }}>
-            <DialogContentText
-              style={{ textAlign: "center" }}
-              id="alert-dialog-slide-description"
-            >
-              <Typography variant="body1">
-                Your all data will be erased
-              </Typography>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions
-            sx={{ display: "flex", justifyContent: "space-evenly" }}
-          >
-            {/* <Button
-              variant="contained"
-              endIcon={<AiFillDelete />}
-              color="error"
-              onClick={deleteAccount}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setOpenAlert(false)}
-              endIcon={<AiFillCloseCircle />}
-            >
-              Close
-            </Button> */}
-          </DialogActions>
-        </Dialog>
+        {/* Dialog Func */}
       </Container>
       <CopyRight sx={{ mt: 4, mb: 10 }} />
     </>

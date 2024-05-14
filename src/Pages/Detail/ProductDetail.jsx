@@ -31,7 +31,6 @@ import { ContextFunction } from "../../Context/Context";
 import ProductReview from "../../Components/Review/ProductReview";
 import ProductCard from "../../Components/Card/Product Card/ProductCard";
 import {
-  CONTRACT_PRODUCT_ADDRESS,
   Transition,
   getSingleProduct,
   numberWithCommas,
@@ -40,8 +39,14 @@ import CopyRight from "../../Components/CopyRight/CopyRight";
 import { useContractRead, useContract, useAddress } from "@thirdweb-dev/react";
 
 const ProductDetail = () => {
-  const { cart, setCart, wishlistData, setWishlistData } =
-    useContext(ContextFunction);
+  const {
+    cart,
+    setCart,
+    wishlistData,
+    setWishlistData,
+    quantity,
+    setQuantity,
+  } = useContext(ContextFunction);
   const [openAlert, setOpenAlert] = useState(false);
   const { id, cat } = useParams();
   const [product, setProduct] = useState([]);
@@ -53,9 +58,6 @@ const ProductDetail = () => {
   let setProceed = authToken ? true : false;
   const address = useAddress();
   address !== undefined ? (setProceed = true) : (setProceed = false);
-  //
-  // const { contract } = useContract(CONTRACT_PRODUCT_ADDRESS);
-  // const { data: productsSim } = useContractRead(contract, "getAllProducts");
 
   useEffect(() => {
     getSingleProduct(setProduct, id, setLoading);
@@ -77,7 +79,23 @@ const ProductDetail = () => {
         //   }
         // );
         //setCart(data);
+
         setCart([...cart, product]);
+
+        setQuantity((prevQuantity) => {
+          // Kiểm tra nếu prevQuantity không phải là mảng, khởi tạo nó thành mảng rỗng
+          if (!Array.isArray(prevQuantity)) {
+            prevQuantity = [];
+          }
+          return [
+            ...prevQuantity,
+            {
+              id: product.id.toString(),
+              quantity: productQuantity,
+            },
+          ];
+        });
+
         toast.success("Thêm vào giỏ hàng", {
           autoClose: 500,
           theme: "colored",
@@ -124,7 +142,7 @@ const ProductDetail = () => {
     const data = {
       text: product.name,
       title: "e-shopit",
-      url: `https://e-shopit.vercel.app/Detail/type/${cat}/${id}`,
+      url: ``,
     };
     if (navigator.canShare && navigator.canShare(data)) {
       navigator.share(data);
@@ -150,8 +168,9 @@ const ProductDetail = () => {
   } else if (cat === "jewelry") {
     data.push(cat);
   }
+
   const increaseQuantity = () => {
-    setProductQuantity((prev) => prev + 1);
+    setProductQuantity(productQuantity + 1);
     if (productQuantity >= 5) {
       setProductQuantity(5);
     }
@@ -278,7 +297,7 @@ const ProductDetail = () => {
                   variant="outlined"
                   aria-label="outlined button group"
                 >
-                  <Button onClick={increaseQuantity}>+</Button>
+                  <Button onClick={() => increaseQuantity()}>+</Button>
                   <Button>{productQuantity}</Button>
                   <Button onClick={decreaseQuantity}>-</Button>
                 </ButtonGroup>

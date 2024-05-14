@@ -10,7 +10,6 @@ import {
   CssBaseline,
   Box,
 } from "@mui/material";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AiFillCloseCircle, AiOutlineLogin } from "react-icons/ai";
@@ -28,7 +27,7 @@ import CopyRight from "../../Components/CopyRight/CopyRight";
 import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
 
 const Cart = () => {
-  const { cart, setCart } = useContext(ContextFunction);
+  const { cart, setCart, quantity } = useContext(ContextFunction);
   const [total, setTotal] = useState(0);
   const [openAlert, setOpenAlert] = useState(false);
   const [previousOrder, setPreviousOrder] = useState([]);
@@ -40,11 +39,12 @@ const Cart = () => {
 
   const address = useAddress();
   address !== undefined ? (setProceed = true) : (setProceed = false);
+
   const { contract } = useContract(CONTRACT_AUTH_ADDRESS);
   const { mutateAsync: addNewUser } = useContractWrite(contract, "addUser");
   const [checkUser, setCheckUser] = useState();
-  console.log("1", checkUser);
 
+  console.log(quantity);
   useEffect(() => {
     if (setProceed) {
       //getCart();
@@ -57,14 +57,23 @@ const Cart = () => {
   }, []);
 
   useEffect(() => {
+    let productQuantity = 1;
+
     if (setProceed) {
       setTotal(
-        cart.reduce(
-          (acc, curr) =>
-            //curr.quantity
-            acc + (parseInt(curr?.price) * 1 + shippingCoast),
-          0
-        )
+        cart.reduce((acc, curr) => {
+          // Tìm phần tử trong mảng quantity có id trùng với id của phần tử hiện tại trong cart
+          const matchingQuantity = quantity.find(
+            (q) => q.id === curr.id.toString()
+          );
+          // Lấy quantity từ matchingQuantity nếu tìm thấy, nếu không lấy 1
+          const quantityValue = matchingQuantity
+            ? matchingQuantity.quantity
+            : 1;
+
+          // Tính tổng
+          return acc + (parseInt(curr?.price) * quantityValue + shippingCoast);
+        }, 0)
       );
     }
   }, [cart]);
@@ -88,17 +97,17 @@ const Cart = () => {
     navigate("/login");
   };
 
-  const getPreviousOrder = async () => {
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_GET_PREVIOUS_ORDER}`,
-      {
-        headers: {
-          Authorization: authToken,
-        },
-      }
-    );
-    setPreviousOrder(data);
-  };
+  // const getPreviousOrder = async () => {
+  //   const { data } = await axios.get(
+  //     `${process.env.REACT_APP_GET_PREVIOUS_ORDER}`,
+  //     {
+  //       headers: {
+  //         Authorization: authToken,
+  //       },
+  //     }
+  //   );
+  //   setPreviousOrder(data);
+  // };
 
   const removeFromCart = async (product) => {
     if (setProceed) {
@@ -196,6 +205,7 @@ const Cart = () => {
                   product={product}
                   removeFromCart={removeFromCart}
                   key={product.id}
+                  quantity={quantity}
                 />
               ))}
           </Box>
@@ -217,12 +227,13 @@ const Cart = () => {
           )}
         </Container>
       </Container>
-      {setProceed && previousOrder.length > 0 && (
+
+      {/* {setProceed && previousOrder.length > 0 && (
         <Typography variant="h6" sx={{ textAlign: "center", margin: "5px 0" }}>
           Previous Orders
         </Typography>
-      )}
-      <Container
+      )} */}
+      {/* <Container
         maxWidth="xl"
         style={{
           marginTop: 10,
@@ -242,7 +253,8 @@ const Cart = () => {
             </Link>
           ))
         )}
-      </Container>
+      </Container> */}
+
       <Dialog
         open={openAlert}
         keepMounted
@@ -257,7 +269,7 @@ const Cart = () => {
             justifyContent: "center",
           }}
         >
-          <Typography variant="h5"> Please Login To Proceed</Typography>
+          <Typography variant="h5">Xin hãy đăng nhập</Typography>
         </DialogContent>
         <DialogActions sx={{ display: "flex", justifyContent: "space-evenly" }}>
           <Button
@@ -266,7 +278,7 @@ const Cart = () => {
             endIcon={<AiOutlineLogin />}
             color="primary"
           >
-            Login
+            Đăng nhập
           </Button>
           <Button
             variant="contained"

@@ -2,7 +2,7 @@ import { Slide } from "@mui/material";
 import axios from "axios";
 import { forwardRef } from "react";
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
-//
+
 const SDK = new ThirdwebSDK("sepolia");
 
 const getCart = async (setProceed, setCart, authToken) => {
@@ -78,7 +78,7 @@ export {
 };
 
 export const CONTRACT_PRODUCT_ADDRESS =
-  "0x55A9a7e1c45FF45e3Ff4b8295BD901025ce0e554";
+  "0x62c4Eb24feAa5C343f166e881275D658B48CdDc3";
 export const CONTRACT_CATERGOTY_ADDRESS =
   "0xad56Ed62ec7Cb322c7546D9a560686E031EE472C";
 export const CONTRACT_ORDER_ADDRESS =

@@ -9,10 +9,16 @@ import BannerData from "../../Helpers/HomePageBanner";
 import Carousel from "../../Components/Carousel/Carousel";
 import SearchBar from "../../Components/SearchBar/SearchBar";
 import CopyRight from "../../Components/CopyRight/CopyRight";
+import { useContract, useContractRead } from "@thirdweb-dev/react";
+import { CONTRACT_PRODUCT_ADDRESS } from "../../Constants/Constant";
 
 const HomePage = () => {
   const { setCart } = useContext(ContextFunction);
   let authToken = localStorage.getItem("Authorization");
+
+  const { contract } = useContract(CONTRACT_PRODUCT_ADDRESS);
+  const { data: products } = useContractRead(contract, "getAllProducts");
+
   useEffect(() => {
     getCart();
     window.scroll(0, 0);
@@ -48,6 +54,8 @@ const HomePage = () => {
         >
           <SearchBar />
         </Container>
+        
+        {/* San pham moi */}
         <Typography
           variant="h3"
           sx={{
@@ -57,7 +65,7 @@ const HomePage = () => {
             fontWeight: "bold",
           }}
         >
-          Danh mục
+          Sản phẩm mới
         </Typography>
         <Container
           maxWidth="xl"
@@ -70,9 +78,11 @@ const HomePage = () => {
             gap: 20,
           }}
         >
-          {BannerData.map((data) => (
-            <CategoryCard data={data} key={data.img} />
-          ))}
+          {products &&
+            products.slice(0, 6).map((data) => (
+              //CategoryCardw  => san pham moi
+              <CategoryCard data={data} key={data.images[0]} />
+            ))}
         </Container>
       </Container>
       <CopyRight sx={{ mt: 8, mb: 10 }} />

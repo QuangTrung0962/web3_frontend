@@ -18,7 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { profile } from "../../Assets/Images/Image";
 import { toast } from "react-toastify";
 import CopyRight from "../CopyRight/CopyRight";
-import { Transition, handleClose } from "../../Constants/Constant";
+import { Transition, getUser, handleClose } from "../../Constants/Constant";
 import { AiFillCloseCircle, AiOutlineSave } from "react-icons/ai";
 import { useAddress } from "@thirdweb-dev/react";
 const CheckoutForm = () => {
@@ -36,7 +36,7 @@ const CheckoutForm = () => {
 
   useEffect(() => {
     if (setProceed) {
-      getUserData();
+      getUserDetailData();
     } else {
       navigate("/");
     }
@@ -46,36 +46,39 @@ const CheckoutForm = () => {
     firstName: "",
     lastName: "",
     phoneNumber: "",
-    userEmail: "",
-    address: "",
-    zipCode: "",
-    city: "",
-    userState: "",
+    email: "",
+    province: "",
+    district: "",
+    ward: "",
+    detail: "",
   });
-  const getUserData = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_GET_USER_DETAILS}`,
-        {
-          headers: {
-            Authorization: authToken,
-          },
-        }
-      );
-      setUserData(data);
-      if (!data.address || !data.city || !data.zipCode || !data.userState) {
-        setOpenAlert(true);
-        console.log(1);
-      }
 
-      userDetails.firstName = data.firstName;
-      userDetails.lastName = data.lastName;
-      userDetails.userEmail = data.email;
-      userDetails.phoneNumber = data.phoneNumber;
-      userDetails.address = data.address;
-      userDetails.zipCode = data.zipCode;
-      userDetails.city = data.city;
-      userDetails.userState = data.userState;
+  const getUserDetailData = async () => {
+    try {
+      // const { data } = await axios.get(
+      //   `${process.env.REACT_APP_GET_USER_DETAILS}`,
+      //   {
+      //     headers: {
+      //       Authorization: authToken,
+      //     },
+      //   }
+      // );
+      // setUserData(data);
+
+      // if (!data.address || !data.city || !data.zipCode || !data.userState) {
+      //   setOpenAlert(true);
+      //   console.log(1);
+      // }
+      getUser(address, setUserData);
+
+      // userDetails.firstName = userData.firstName;
+      // userDetails.lastName = userData.lastName;
+      // userDetails.email = userData.email;
+      // userDetails.phoneNumber = userData.phoneNumber;
+      // userDetails.province = userData.province;
+      // userDetails.district = userData.district;
+      // userDetails.ward = userData.ward;
+      // userDetails.detail = userData.detail;
     } catch (error) {
       console.log(error);
     }
@@ -99,43 +102,43 @@ const CheckoutForm = () => {
         theme: "colored",
       });
     } else {
+      //Call payment method
       try {
-        const {
-          data: { key },
-        } = await axios.get(`${process.env.REACT_APP_GET_KEY}`);
-        const { data } = await axios.post(
-          `${process.env.REACT_APP_GET_CHECKOUT}`,
-          {
-            amount: totalAmount,
-            productDetails: JSON.stringify(cart),
-            userId: userData._id,
-            userDetails: JSON.stringify(userDetails),
-          }
-        );
-
-        const options = {
-          key: key,
-          amount: totalAmount,
-          currency: "INR",
-          name: userData.firstName + " " + userData.lastName,
-          description: "Payment",
-          image: profile,
-          order_id: data.order.id,
-          callback_url: process.env.REACT_APP_GET_PAYMENTVERIFICATION,
-          prefill: {
-            name: userData.firstName + " " + userData.lastName,
-            email: userData.email,
-            contact: userData.phoneNumber,
-          },
-          notes: {
-            address: `${userData.address} ${userData.city} ${userData.zipCode} ${userData.userState}`,
-          },
-          theme: {
-            color: "#1976d2",
-          },
-        };
-        const razor = new window.Razorpay(options);
-        razor.open();
+        // const {
+        //   data: { key },
+        // } = await axios.get(`${process.env.REACT_APP_GET_KEY}`);
+        // const { data } = await axios.post(
+        //   `${process.env.REACT_APP_GET_CHECKOUT}`,
+        //   {
+        //     amount: totalAmount,
+        //     productDetails: JSON.stringify(cart),
+        //     userId: userData._id,
+        //     userDetails: JSON.stringify(userDetails),
+        //   }
+        // );
+        // const options = {
+        //   key: key,
+        //   amount: totalAmount,
+        //   currency: "INR",
+        //   name: userData.firstName + " " + userData.lastName,
+        //   description: "Payment",
+        //   image: profile,
+        //   order_id: data.order.id,
+        //   callback_url: process.env.REACT_APP_GET_PAYMENTVERIFICATION,
+        //   prefill: {
+        //     name: userData.firstName + " " + userData.lastName,
+        //     email: userData.email,
+        //     contact: userData.phoneNumber,
+        //   },
+        //   notes: {
+        //     address: `${userData.address} ${userData.city} ${userData.zipCode} ${userData.userState}`,
+        //   },
+        //   theme: {
+        //     color: "#1976d2",
+        //   },
+        // };
+        // const razor = new window.Razorpay(options);
+        // razor.open();
       } catch (error) {
         console.log(error);
       }
@@ -174,7 +177,7 @@ const CheckoutForm = () => {
                 // disabled
                 label="Tên"
                 name="firstName"
-                value={userDetails.firstName || ""}
+                value={userData.firstName || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -182,9 +185,9 @@ const CheckoutForm = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Họ"
+                label="Họ đệm"
                 name="lastName"
-                value={userDetails.lastName || ""}
+                value={userData.lastName || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -195,7 +198,7 @@ const CheckoutForm = () => {
                 label="SĐT"
                 type="tel"
                 name="phoneNumber"
-                value={userDetails.phoneNumber || ""}
+                value={userData.phoneNumber || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -205,7 +208,7 @@ const CheckoutForm = () => {
               <TextField
                 label="Email"
                 name="userEmail"
-                value={userDetails.userEmail || ""}
+                value={userData.email || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -216,7 +219,7 @@ const CheckoutForm = () => {
               <TextField
                 label="Tỉnh/Thành phố"
                 name="address"
-                value={userDetails.address || ""}
+                value={userData.province || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -226,7 +229,7 @@ const CheckoutForm = () => {
               <TextField
                 label="Quận/Huyện"
                 name="city"
-                value={userDetails.city || ""}
+                value={userData.district || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -237,7 +240,7 @@ const CheckoutForm = () => {
                 type="tel"
                 label="Phường/Xã"
                 name="zipCode"
-                value={userDetails.zipCode || ""}
+                value={userData.ward || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth
@@ -247,7 +250,7 @@ const CheckoutForm = () => {
               <TextField
                 label="Địa chỉ chi tiết"
                 name="address"
-                value={userDetails.userState || ""}
+                value={userData.detail || ""}
                 onChange={handleOnchange}
                 variant="outlined"
                 fullWidth

@@ -16,12 +16,16 @@ import { CONTRACT_PRODUCT_ADDRESS } from "../Constants/Constant";
 const SingleCategory = () => {
   const [productData, setProductData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [filterOption, setFilterOption] = useState("All");
-  const [title, setTitle] = useState("All");
-  const { cat } = useParams();
+  const [filterOption, setFilterOption] = useState("Tất cả");
+  const [title, setTitle] = useState("Tất cả");
+  const { cat, id } = useParams();
 
   const { contract } = useContract(CONTRACT_PRODUCT_ADDRESS);
-  const { data: products } = useContractRead(contract, "getAllProducts");
+  const { data: products } = useContractRead(
+    contract,
+    "getProductByCategoryId",
+    [id]
+  );
 
   useEffect(() => {
     getCategoryProduct();
@@ -32,10 +36,7 @@ const SingleCategory = () => {
     try {
       //cat = Samsung
       setIsLoading(true);
-      //   const { data } = await axios.post(
-      //     `${process.env.REACT_APP_PRODUCT_TYPE}`,
-      //     { userType: cat }
-      //   );
+
       if (products != null) {
         setIsLoading(false);
         setProductData(products);
@@ -47,66 +48,20 @@ const SingleCategory = () => {
 
   const productFilter = [];
 
-  if (cat === "book") {
+  if (cat !== "") {
     productFilter.push(
-      "All",
-      "Scifi",
-      "Business",
-      "Mystery",
-      "Cookbooks",
-      "Accessories",
-      "Price Low To High",
-      "Price High To Low",
-      "High Rated",
-      "Low Rated"
+      "Tất cả",
+      "Giá từ thấp đến cao",
+      "Giá từ cao đến thấp",
+      "Đánh giá cao",
+      "Đánh giá thấp"
     );
-  } else if (cat === "cloths") {
-    productFilter.push(
-      "All",
-      "Men",
-      "Women",
-      "Price Low To High",
-      "Price High To Low",
-      "High Rated",
-      "Low Rated"
-    );
-  } else if (cat === "shoe") {
-    productFilter.push(
-      "All",
-      "Running",
-      "Football",
-      "Formal",
-      "Casual",
-      "Price Low To High",
-      "Price High To Low",
-      "High Rated",
-      "Low Rated"
-    );
-  } else if (cat === "electronics") {
-    productFilter.push(
-      "All",
-      "Monitor",
-      "SSD",
-      "HDD",
-      "Price Low To High",
-      "Price High To Low",
-      "High Rated",
-      "Low Rated"
-    );
-  } else if (cat === "jewelry") {
-    productFilter.push("All");
-  } else if (cat === "samsung") {
-    productFilter.push("All");
   }
 
   const handleChange = (e) => {
     setFilterOption(e.target.value.split(" ").join("").toLowerCase());
     setTitle(e.target.value);
   };
-  // pricelowtohigh
-  // pricehightolow
-  // highrated
-  // lowrated
 
   const getData = async () => {
     setIsLoading(true);
@@ -176,12 +131,11 @@ const SingleCategory = () => {
                 sx={{ width: 200 }}
                 onChange={(e) => handleChange(e)}
               >
-                {products &&
-                  productFilter.map((prod) => (
-                    <MenuItem key={prod} value={prod}>
-                      {prod}
-                    </MenuItem>
-                  ))}
+                {productFilter.map((prod) => (
+                  <MenuItem key={prod} value={prod}>
+                    {prod}
+                  </MenuItem>
+                ))}
               </Select>
             </Box>
           </FormControl>
@@ -200,11 +154,13 @@ const SingleCategory = () => {
           }}
         >
           {products &&
-            products.map((prod) => (
-              <Link to={`/Detail/type/${cat}/${prod.id}`} key={prod.id}>
-                <ProductCard prod={prod} />
-              </Link>
-            ))}
+            products
+              .filter((prod) => prod.productName !== "")
+              .map((prod) => (
+                <Link to={`/Detail/type/${cat}/${prod.id}`} key={prod.id}>
+                  <ProductCard prod={prod} />
+                </Link>
+              ))}
         </Container>
       </Container>
       <CopyRight sx={{ mt: 8, mb: 10 }} />
@@ -213,5 +169,3 @@ const SingleCategory = () => {
 };
 
 export default SingleCategory;
-
-//

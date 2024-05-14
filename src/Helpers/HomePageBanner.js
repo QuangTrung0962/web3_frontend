@@ -6,35 +6,48 @@ import {
   Xiaomi,
   Apple,
   Samsung,
+  Oppo,
+  Nokia,
+  Vivo,
+  Realme,
 } from "../Assets/Images/Image";
+
 const data = [
   {
-    img: GroupCloth,
-    name: "Cloths",
-  },
-  {
-    img: Shoes,
-    name: "Shoe",
-  },
-  {
-    img: FemaleCloth,
-    name: "Cloths",
-  },
-  {
-    img: Electronics,
-    name: "Electronics",
-  },
-  {
-    img: Xiaomi,
-    name: "Xiaomi",
-  },
-  {
+    id: "1",
     img: Apple,
     name: "Apple",
   },
   {
+    id: "2",
     img: Samsung,
     name: "Samsung",
   },
+  {
+    id: "3",
+    img: Xiaomi,
+    name: "Xiaomi",
+  },
+  {
+    id: "3",
+    img: Oppo,
+    name: "Oppo",
+  },
+  {
+    id: "3",
+    img: Nokia,
+    name: "Nokia",
+  },
+  {
+    id: "3",
+    img: Vivo,
+    name: "Vivo",
+  },
+  {
+    id: "3",
+    img: Realme,
+    name: "Realme",
+  },
 ];
+
 export default data;

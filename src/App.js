@@ -22,7 +22,6 @@ import AdminHomePage from "./Admin/Pages/AdminHomePage";
 import SingleUserPage from "./Admin/Pages/SingleUserPage";
 import SingleProduct from "./Admin/Pages/SingleProduct";
 
-//Blocchain
 import {
   ThirdwebProvider,
   metamaskWallet,
@@ -61,7 +60,10 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/Detail/type/:cat/:id" element={<ProductDetail />} />
               <Route path="product/:id" element={<ProductDetail />} />
-              <Route path="product/type/:cat" element={<SingleCategory />} />
+              <Route
+                path="product/type/:cat/:id"
+                element={<SingleCategory />}
+              />
               <Route path="/cart" element={<Cart />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/checkout" element={<CheckoutForm />} />
