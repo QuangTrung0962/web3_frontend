@@ -84,7 +84,7 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
         autoClose: 500,
       });
     } else if (comment.length <= 4) {
-      toast.error("Please add more than 4 characters", {
+      toast.error("Bình luận phải dài từ 4 kí tự", {
         theme: "colored",
         autoClose: 500,
       });
@@ -134,7 +134,7 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
             <Rating
               name="hover-feedback"
               value={value}
-              precision={0.5}
+              precision={1}
               getLabelText={getLabelText}
               id="rating"
               onChange={(event, newValue) => {
@@ -166,7 +166,7 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
             variant="outlined"
           />
 
-          <Tooltip title="Send Review">
+          <Tooltip title="Gửi đánh giá">
             <Button
               className="form-btn"
               variant="contained"
@@ -186,6 +186,7 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
           />
         </div>
       </div>
+
       {reviews.length >= 1 ? (
         <Box
           sx={{

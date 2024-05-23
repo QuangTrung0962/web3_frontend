@@ -27,7 +27,7 @@ import CopyRight from "../../Components/CopyRight/CopyRight";
 import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
 
 const Cart = () => {
-  const { cart, setCart, quantity } = useContext(ContextFunction);
+  const { cart, setCart, quantity, setQuantity } = useContext(ContextFunction);
   const [total, setTotal] = useState(0);
   const [openAlert, setOpenAlert] = useState(false);
   const [previousOrder, setPreviousOrder] = useState([]);
@@ -41,10 +41,8 @@ const Cart = () => {
   address !== undefined ? (setProceed = true) : (setProceed = false);
 
   const { contract } = useContract(CONTRACT_AUTH_ADDRESS);
-  const { mutateAsync: addNewUser } = useContractWrite(contract, "addUser");
   const [checkUser, setCheckUser] = useState();
 
-  console.log(quantity);
   useEffect(() => {
     if (setProceed) {
       //getCart();
@@ -57,7 +55,7 @@ const Cart = () => {
   }, []);
 
   useEffect(() => {
-    let productQuantity = 1;
+    // let productQuantity = 1;
 
     if (setProceed) {
       setTotal(
@@ -121,6 +119,10 @@ const Cart = () => {
         // Lọc bỏ sản phẩm có _id trùng khớp với _id của sản phẩm cần xóa
         // Cập nhật giỏ hàng với danh sách sản phẩm mới
         setCart(cart.filter((product) => product.id !== productIdToRemove));
+
+        setQuantity(
+          quantity.filter((item) => item.id !== productIdToRemove.toString())
+        );
       } catch (error) {
         toast.error("Something went wrong", {
           autoClose: 500,
@@ -140,10 +142,11 @@ const Cart = () => {
       //Add user
 
       if (checkUser === undefined) {
-        await addNewUser({ args: [address, "", "", "", "", "", "", "", ""] });
+        navigate("/update");
+      } else {
+        navigate("/checkout");
       }
-
-      navigate("/checkout");
+      
     }
   };
 

@@ -86,7 +86,7 @@ const OrderSummary = ({ proceedToCheckout, total, shippingCoast }) => {
           color="primary"
           onClick={proceedToCheckout}
         >
-          Thanh toán
+          Đặt hàng
         </Button>
       </CardActions>
     </Card>

@@ -1,67 +1,75 @@
 import {
   Box,
   Button,
+  Collapse,
   Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   Grid,
+  IconButton,
   InputAdornment,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
-import {
-  AiFillCloseCircle,
-  AiFillDelete,
-  AiOutlineFileDone,
-} from "react-icons/ai";
-import { RiLockPasswordLine } from "react-icons/ri";
-import { useNavigate } from "react-router-dom";
+import { AiOutlineFileDone } from "react-icons/ai";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Update.module.css";
 import { toast } from "react-toastify";
-import { RiEyeFill, RiEyeOffFill } from "react-icons/ri";
 import { TiArrowBackOutline } from "react-icons/ti";
 
 import {
   CONTRACT_AUTH_ADDRESS,
-  Transition,
+  CONTRACT_ORDER_ADDRESS,
   getUser,
 } from "../../Constants/Constant";
 import CopyRight from "../../Components/CopyRight/CopyRight";
-import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
+import {
+  useAddress,
+  useContract,
+  useContractRead,
+  useContractWrite,
+} from "@thirdweb-dev/react";
+import { MdKeyboardArrowDown } from "react-icons/md";
 
 const UpdateDetails = () => {
   const [userData, setUserData] = useState([]);
-  const [openAlert, setOpenAlert] = useState(false);
+  //const [openAlert, setOpenAlert] = useState(false);
   let authToken = localStorage.getItem("Authorization");
   let setProceed = authToken ? true : false;
 
   const address = useAddress();
   address !== undefined ? (setProceed = true) : (setProceed = false);
+  const [checkUser, setCheckUser] = useState();
+  const [openOrderId, setOpenOrderId] = useState("");
   const { contract } = useContract(CONTRACT_AUTH_ADDRESS);
+  const { contract: contractOrder } = useContract(CONTRACT_ORDER_ADDRESS);
+
+  const { data: orders } = useContractRead(contractOrder, "getAllOrders");
+
+  const { mutateAsync: addNewUser, isError: addUserError } = useContractWrite(
+    contract,
+    "addUser"
+  );
   const { mutateAsync: editUser, isError: editUserError } = useContractWrite(
     contract,
     "editUser"
   );
 
-  // const [userDetails, setUserDetails] = useState({
-  //   firstName: "",
-  //   lastName: "",
-  //   phoneNumber: "",
-  //   email: "",
-  //   province: "",
-  //   district: "",
-  //   ward: "",
-  //   detail: "",
-  // });
-
   let navigate = useNavigate();
   useEffect(() => {
     if (setProceed) {
       getUserData();
+      getUser(address, setCheckUser);
     } else {
       navigate("/");
     }
@@ -137,29 +145,46 @@ const UpdateDetails = () => {
           theme: "colored",
         });
       } else {
-        await editUser({
-          args: [
-            address,
-            userData.firstName,
-            userData.lastName,
-            userData.email,
-            userData.phoneNumber,
-            userData.province,
-            userData.district,
-            userData.ward,
-            userData.detail,
-          ],
-        });
+        if (checkUser === undefined) {
+          await addNewUser({
+            args: [
+              address,
+              userData.firstName,
+              userData.lastName,
+              userData.email,
+              userData.phoneNumber,
+              userData.province,
+              userData.district,
+              userData.ward,
+              userData.detail,
+            ],
+          });
+        } else {
+          await editUser({
+            args: [
+              address,
+              userData.firstName,
+              userData.lastName,
+              userData.email,
+              userData.phoneNumber,
+              userData.province,
+              userData.district,
+              userData.ward,
+              userData.detail,
+            ],
+          });
+        }
 
-        if (!editUserError) {
+        if (!editUserError && !addUserError) {
           toast.success("Cập nhật thành công", {
             autoClose: 500,
             theme: "colored",
           });
+
           //getUserData();
           navigate("/checkout");
         } else {
-          toast.error("Xảy ra lỗi 1", {
+          toast.error("Xảy ra lỗi", {
             autoClose: 500,
             theme: "colored",
           });
@@ -170,72 +195,6 @@ const UpdateDetails = () => {
       toast.error(error.response.data, { autoClose: 500, theme: "colored" });
     }
   };
-
-  //   const handleResetPassword = async (e) => {
-  //     e.preventDefault();
-  //     try {
-  //       if (!password.currentPassword && !password.newPassword) {
-  //         toast.error("Please Fill the all Fields", {
-  //           autoClose: 500,
-  //           theme: "colored",
-  //         });
-  //       } else if (password.currentPassword.length < 5) {
-  //         toast.error("Please enter valid password", {
-  //           autoClose: 500,
-  //           theme: "colored",
-  //         });
-  //       } else if (password.newPassword.length < 5) {
-  //         toast.error("Please enter password with more than 5 characters", {
-  //           autoClose: 500,
-  //           theme: "colored",
-  //         });
-  //       } else {
-  //         const { data } = await axios.post(
-  //           `${process.env.REACT_APP_RESET_PASSWORD}`,
-  //           {
-  //             id: userData._id,
-  //             currentPassword: password.currentPassword,
-  //             newPassword: password.newPassword,
-  //           },
-  //           {
-  //             headers: {
-  //               Authorization: authToken,
-  //             },
-  //           }
-  //         );
-  //         toast.success(data, { autoClose: 500, theme: "colored" });
-  //         setPassword(
-  //           (password.currentPassword = ""),
-  //           (password.newPassword = "")
-  //         );
-  //       }
-  //     } catch (error) {
-  //       toast.error(error.response.data, { autoClose: 500, theme: "colored" });
-  //       console.log(error);
-  //     }
-  //   };
-
-  //   const deleteAccount = async () => {
-  //     try {
-  //       const deleteUser = await axios.delete(
-  //         `${process.env.REACT_APP_DELETE_USER_DETAILS}/${userData._id}`,
-  //         {
-  //           headers: {
-  //             Authorization: authToken,
-  //           },
-  //         }
-  //       );
-  //       toast.success("Account deleted successfully", {
-  //         autoClose: 500,
-  //         theme: "colored",
-  //       });
-  //       localStorage.removeItem("Authorization");
-  //       sessionStorage.removeItem("totalAmount");
-  //       navigate("/login");
-  //     } catch (error) {
-  //       toast.error(error.response.data, { autoClose: 500, theme: "colored" });
-  //     }
-  //   };
 
   return (
     <>
@@ -368,113 +327,8 @@ const UpdateDetails = () => {
             </Button>
           </Container>
         </form>
-
-        {/* <Typography
-          variant="h6"
-          sx={{ margin: "20px 0", fontWeight: "bold", color: "#1976d2" }}
-        >
-          Reset Password
-        </Typography>
-        <form onSubmit={handleResetPassword}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                label="Current Password"
-                name="currentPassword"
-                type={showPassword ? "text" : "password"}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment
-                      position="end"
-                      onClick={handleClickShowPassword}
-                      sx={{ cursor: "pointer" }}
-                    >
-                      {showPassword ? <RiEyeFill /> : <RiEyeOffFill />}
-                    </InputAdornment>
-                  ),
-                }}
-                value={password.currentPassword || ""}
-                onChange={(e) =>
-                  setPassword({
-                    ...password,
-                    [e.target.name]: e.target.value,
-                  })
-                }
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="New Password"
-                name="newPassword"
-                type={showNewPassword ? "text" : "password"}
-                id="password"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment
-                      position="end"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      sx={{ cursor: "pointer" }}
-                    >
-                      {showNewPassword ? <RiEyeFill /> : <RiEyeOffFill />}
-                    </InputAdornment>
-                  ),
-                }}
-                value={password.newPassword || ""}
-                onChange={(e) =>
-                  setPassword({
-                    ...password,
-                    [e.target.name]: e.target.value,
-                  })
-                }
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-          </Grid>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              margin: "25px 0",
-              width: "100%",
-            }}
-          >
-            <Button
-              variant="contained"
-              color="primary"
-              endIcon={<RiLockPasswordLine />}
-              type="submit"
-            >
-              Reset
-            </Button>
-          </Box>
-        </form> */}
-
-        {/* <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-around",
-            alignItems: "center",
-            margin: "25px 0",
-            width: "100%",
-          }}
-        >
-          <Typography variant="h6">Delete Your Account?</Typography>
-          <Button
-            variant="contained"
-            color="error"
-            endIcon={<AiFillDelete />}
-            onClick={() => setOpenAlert(true)}
-          >
-            Delete
-          </Button>
-        </Box> */}
-
-        {/* Dialog Func */}
       </Container>
+
       <CopyRight sx={{ mt: 4, mb: 10 }} />
     </>
   );

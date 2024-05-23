@@ -36,7 +36,7 @@ import {
   numberWithCommas,
 } from "../../Constants/Constant";
 import CopyRight from "../../Components/CopyRight/CopyRight";
-import { useContractRead, useContract, useAddress } from "@thirdweb-dev/react";
+import { useAddress } from "@thirdweb-dev/react";
 
 const ProductDetail = () => {
   const {
@@ -44,8 +44,8 @@ const ProductDetail = () => {
     setCart,
     wishlistData,
     setWishlistData,
-    quantity,
     setQuantity,
+    quantity,
   } = useContext(ContextFunction);
   const [openAlert, setOpenAlert] = useState(false);
   const { id, cat } = useParams();
@@ -78,23 +78,28 @@ const ProductDetail = () => {
         //     },
         //   }
         // );
-        //setCart(data);
+        // setCart(data);
 
         setCart([...cart, product]);
 
-        setQuantity((prevQuantity) => {
-          // Kiểm tra nếu prevQuantity không phải là mảng, khởi tạo nó thành mảng rỗng
-          if (!Array.isArray(prevQuantity)) {
-            prevQuantity = [];
-          }
-          return [
-            ...prevQuantity,
-            {
-              id: product.id.toString(),
-              quantity: productQuantity,
-            },
-          ];
-        });
+        setQuantity([
+          ...quantity,
+          { id: product.id.toString(), quantity: productQuantity },
+        ]);
+
+        // setQuantity((prevQuantity) => {
+        //   // Kiểm tra nếu prevQuantity không phải là mảng, khởi tạo nó thành mảng rỗng
+        //   if (!Array.isArray(prevQuantity)) {
+        //     prevQuantity = [];
+        //   }
+        //   return [
+        //     ...prevQuantity,
+        //     {
+        //       id: product.id.toString(),
+        //       quantity: productQuantity,
+        //     },
+        //   ];
+        // });
 
         toast.success("Thêm vào giỏ hàng", {
           autoClose: 500,
@@ -110,21 +115,24 @@ const ProductDetail = () => {
       setOpenAlert(true);
     }
   };
+
   const addToWhishList = async (product) => {
     if (setProceed) {
       try {
-        const { data } = await axios.post(
-          `${process.env.REACT_APP_ADD_WISHLIST}`,
-          { _id: product._id },
-          {
-            headers: {
-              Authorization: authToken,
-            },
-          }
-        );
-        setWishlistData(data);
+        // const { data } = await axios.post(
+        //   `${process.env.REACT_APP_ADD_WISHLIST}`,
+        //   { _id: product._id },
+        //   {
+        //     headers: {
+        //       Authorization: authToken,
+        //     },
+        //   }
+        // );
+        //setWishlistData(data);
+
         setWishlistData([...wishlistData, product]);
-        toast.success("Added To Wishlist", {
+
+        toast.success("Thêm vào yêu thích", {
           autoClose: 500,
           theme: "colored",
         });
@@ -138,6 +146,7 @@ const ProductDetail = () => {
       setOpenAlert(true);
     }
   };
+
   const shareProduct = (product) => {
     const data = {
       text: product.name,
@@ -150,6 +159,7 @@ const ProductDetail = () => {
       toast.error("browser not support", { autoClose: 500, theme: "colored" });
     }
   };
+
   const getSimilarProducts = async () => {
     const { data } = await axios.post(`${process.env.REACT_APP_PRODUCT_TYPE}`, {
       userType: cat,
@@ -181,6 +191,7 @@ const ProductDetail = () => {
       setProductQuantity(1);
     }
   };
+
   return (
     <>
       <Container maxWidth="xl">
@@ -345,6 +356,7 @@ const ProductDetail = () => {
             </section>
           )}
         </main>
+        
         <ProductReview
           setProceed={setProceed}
           authToken={authToken}

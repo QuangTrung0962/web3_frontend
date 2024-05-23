@@ -16,7 +16,7 @@ import { numberWithCommas } from "../../../Constants/Constant";
 
 const CartCard = ({ product, removeFromCart, quantity }) => {
   //Check quantity
-  const matchingItem = quantity.find(
+  const matchingItem = quantity?.find(
     (item) => item.id === product.id.toString()
   );
 

@@ -17,6 +17,7 @@ import AddProduct from "../AddProduct";
 const ProductTable = ({ data, getProductInfo }) => {
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
   const columns = [
     {
       id: "name",

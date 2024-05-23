@@ -11,42 +11,37 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import { styled } from "@mui/material/styles";
 import { Link } from "react-router-dom";
-import { getAllProducts } from "../../Constants/Constant";
+import {
+  CONTRACT_PRODUCT_ADDRESS,
+  getAllProducts,
+} from "../../Constants/Constant";
+import { useContract, useContractRead } from "@thirdweb-dev/react";
 const SearchBar = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const { contract } = useContract(CONTRACT_PRODUCT_ADDRESS);
+  const { data: productData, isLoading } = useContractRead(
+    contract,
+    "getAllProducts"
+  );
+
   useEffect(() => {
-    getAllProducts(setData);
+    //getAllProducts(setData);
   }, []);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    const newFilteredData = data.filter(
+    const newFilteredData = productData.filter(
       (item) =>
-        (item.name &&
-          item.name.toLowerCase().includes(event.target.value.toLowerCase())) ||
-        (item.type &&
-          item.type.toLowerCase().includes(event.target.value.toLowerCase())) ||
-        (item.brand &&
-          item.brand
-            .toLowerCase()
-            .includes(event.target.value.toLowerCase())) ||
-        (item.category &&
-          item.category
-            .toLowerCase()
-            .includes(event.target.value.toLowerCase())) ||
-        (item.author &&
-          item.author
-            .toLowerCase()
-            .includes(event.target.value.toLowerCase())) ||
-        (item.description &&
-          item.description
-            .toLowerCase()
-            .includes(event.target.value.toLowerCase())) ||
-        (item.gender &&
-          item.gender.toLowerCase().includes(event.target.value.toLowerCase()))
+        item.productName &&
+        item.productName
+          .toLowerCase()
+          .includes(event.target.value.toLowerCase())
+      //   ||
+      // (item.type &&
+      //   item.type.toLowerCase().includes(event.target.value.toLowerCase())) ||
     );
     setFilteredData(newFilteredData);
   };
@@ -58,6 +53,7 @@ const SearchBar = () => {
     textAlign: "center",
     color: theme.palette.text.secondary,
   }));
+
   return (
     <Container
       style={{
@@ -94,14 +90,11 @@ const SearchBar = () => {
           <Stack spacing={0}>
             {filteredData.length === 0 ? (
               <Typography variant="h6" textAlign="center" margin="25px 0">
-                Product Not Found
+                Không tìm thấy sản phẩm
               </Typography>
             ) : (
               filteredData.map((products) => (
-                <Link
-                  to={`/Detail/type/${products.type}/${products._id}`}
-                  key={products._id}
-                >
+                <Link to={`/product/${products.id}`} key={products.id}>
                   <Item
                     sx={{
                       borderRadius: 0,
@@ -112,13 +105,12 @@ const SearchBar = () => {
                     }}
                   >
                     <Typography variant="body2">
-                      {" "}
-                      {products.name.slice(0, 35)}
+                      {products.productName.slice(0, 35)}
                     </Typography>
                     <img
-                      src={products.image}
-                      alt={products.name}
-                      style={{ width: 55, height: 65 }}
+                      src={products.images[0]}
+                      alt={products.productName}
+                      style={{ width: 80, height: 70 }}
                     />
                   </Item>
                 </Link>

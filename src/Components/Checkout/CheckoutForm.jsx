@@ -4,7 +4,6 @@ import {
   Container,
   Dialog,
   DialogActions,
-  DialogContent,
   Grid,
   TextField,
   Typography,
@@ -12,17 +11,24 @@ import {
 import styles from "./Chekout.module.css";
 import { BsFillCartCheckFill } from "react-icons/bs";
 import { MdUpdate } from "react-icons/md";
-import axios from "axios";
 import { ContextFunction } from "../../Context/Context";
 import { Link, useNavigate } from "react-router-dom";
 import { profile } from "../../Assets/Images/Image";
 import { toast } from "react-toastify";
 import CopyRight from "../CopyRight/CopyRight";
-import { Transition, getUser, handleClose } from "../../Constants/Constant";
+import {
+  CONTRACT_ORDER_ADDRESS,
+  Transition,
+  getUser,
+  handleClose,
+} from "../../Constants/Constant";
 import { AiFillCloseCircle, AiOutlineSave } from "react-icons/ai";
-import { useAddress } from "@thirdweb-dev/react";
+import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
+import { format } from "date-fns";
+//import { toWei } from "thirdweb-dev/sdk";
+
 const CheckoutForm = () => {
-  const { cart } = useContext(ContextFunction);
+  const { cart, quantity } = useContext(ContextFunction);
   const [userData, setUserData] = useState([]);
   const [openAlert, setOpenAlert] = useState(false);
 
@@ -33,6 +39,12 @@ const CheckoutForm = () => {
 
   const address = useAddress();
   address !== undefined ? (setProceed = true) : (setProceed = false);
+  const { contract } = useContract(CONTRACT_ORDER_ADDRESS);
+  const {
+    mutateAsync: checkout,
+    isSuccess: createOrderSuccess,
+    isError,
+  } = useContractWrite(contract, "checkout");
 
   useEffect(() => {
     if (setProceed) {
@@ -88,14 +100,14 @@ const CheckoutForm = () => {
     e.preventDefault();
 
     if (
-      !userDetails.firstName ||
-      !userDetails.lastName ||
-      !userDetails.userEmail ||
-      !userDetails.phoneNumber ||
-      !userDetails.address ||
-      !userDetails.zipCode ||
-      !userDetails.city ||
-      !userDetails.userState
+      !userData.firstName ||
+      !userData.lastName ||
+      !userData.email ||
+      !userData.phoneNumber ||
+      !userData.province ||
+      !userData.district ||
+      !userData.ward ||
+      !userData.detail
     ) {
       toast.error("Hãy điền tất cả các trường", {
         autoClose: 500,
@@ -139,6 +151,28 @@ const CheckoutForm = () => {
         // };
         // const razor = new window.Razorpay(options);
         // razor.open();
+
+        const currentTime = new Date();
+        const formattedTime = format(currentTime, "dd/MM/yyyy HH:mm:ss");
+        const combinedData = cart.map((cartItem) => {
+          const quantityItem = quantity.find(
+            (q) => q.id === cartItem.id.toString()
+          );
+          return [
+            parseInt(cartItem.id),
+            cartItem.productName,
+            quantityItem ? quantityItem.quantity : 0, // Sử dụng 0 nếu không tìm thấy quantity
+          ];
+        });
+        await checkout({
+          args: [formattedTime, totalAmount, cart.length, combinedData],
+        });
+        toast.success("Thanh toán thành công", {
+          autoClose: 500,
+          theme: "colored",
+        });
+
+        navigate("/paymentsuccess");
       } catch (error) {
         console.log(error);
       }
@@ -146,7 +180,8 @@ const CheckoutForm = () => {
   };
 
   const handleOnchange = (e) => {
-    setUserDetails({ ...userDetails, [e.target.name]: e.target.value });
+    //setUserDetails({ ...userDetails, [e.target.name]: e.target.value });
+    setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
   return (
@@ -207,7 +242,7 @@ const CheckoutForm = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Email"
-                name="userEmail"
+                name="email"
                 value={userData.email || ""}
                 onChange={handleOnchange}
                 variant="outlined"
@@ -218,7 +253,7 @@ const CheckoutForm = () => {
             <Grid item xs={12}>
               <TextField
                 label="Tỉnh/Thành phố"
-                name="address"
+                name="province"
                 value={userData.province || ""}
                 onChange={handleOnchange}
                 variant="outlined"
@@ -228,7 +263,7 @@ const CheckoutForm = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 label="Quận/Huyện"
-                name="city"
+                name="district"
                 value={userData.district || ""}
                 onChange={handleOnchange}
                 variant="outlined"
@@ -239,7 +274,7 @@ const CheckoutForm = () => {
               <TextField
                 type="tel"
                 label="Phường/Xã"
-                name="zipCode"
+                name="ward"
                 value={userData.ward || ""}
                 onChange={handleOnchange}
                 variant="outlined"
@@ -249,7 +284,7 @@ const CheckoutForm = () => {
             <Grid item xs={12}>
               <TextField
                 label="Địa chỉ chi tiết"
-                name="address"
+                name="detail"
                 value={userData.detail || ""}
                 onChange={handleOnchange}
                 variant="outlined"
@@ -287,18 +322,6 @@ const CheckoutForm = () => {
           onClose={() => handleClose(setOpenAlert)}
           aria-describedby="alert-dialog-slide-description"
         >
-          {/* <DialogContent
-            sx={{
-              width: { xs: 280, md: 350, xl: 400 },
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Typography variant="h6">
-              Add permanent address then you don't have to add again.{" "}
-            </Typography>
-          </DialogContent> */}
-
           <DialogActions
             sx={{ display: "flex", justifyContent: "space-evenly" }}
           >

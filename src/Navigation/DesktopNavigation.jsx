@@ -97,6 +97,23 @@ const DesktopNavigation = () => {
               <>
                 <li className="nav-links">
                   <Tooltip title="Cá nhân">
+                    <NavLink to="/user/detail">
+                      <span className="nav-icon-span">
+                        {" "}
+                        <CgProfile
+                          style={{
+                            fontSize: 29,
+                            marginTop: 7,
+                            marginRight: 10,
+                          }}
+                        />
+                      </span>
+                    </NavLink>
+                  </Tooltip>
+                </li>
+
+                <li className="nav-links">
+                  <Tooltip title="Đăng nhập">
                     <ConnectWallet
                       theme={"light"}
                       modalSize={"wide"}
@@ -112,7 +129,6 @@ const DesktopNavigation = () => {
                 <Tooltip title="Đăng nhập">
                   <NavLink to="/login">
                     <span className="nav-icon-span">
-                      {" "}
                       <CgProfile style={{ fontSize: 29, marginTop: 7 }} />
                     </span>
                   </NavLink>

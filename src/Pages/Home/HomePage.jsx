@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import axios from "axios";
 import { Container, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import { useContext } from "react";
@@ -13,26 +12,26 @@ import { useContract, useContractRead } from "@thirdweb-dev/react";
 import { CONTRACT_PRODUCT_ADDRESS } from "../../Constants/Constant";
 
 const HomePage = () => {
-  const { setCart } = useContext(ContextFunction);
-  let authToken = localStorage.getItem("Authorization");
+  // const { setCart } = useContext(ContextFunction);
+  // let authToken = localStorage.getItem("Authorization");
 
   const { contract } = useContract(CONTRACT_PRODUCT_ADDRESS);
   const { data: products } = useContractRead(contract, "getAllProducts");
 
   useEffect(() => {
-    getCart();
+    //getCart();
     window.scroll(0, 0);
   }, []);
-  const getCart = async () => {
-    if (authToken !== null) {
-      const { data } = await axios.get(`${process.env.REACT_APP_GET_CART}`, {
-        headers: {
-          Authorization: authToken,
-        },
-      });
-      setCart(data);
-    }
-  };
+  // const getCart = async () => {
+  //   if (authToken !== null) {
+  //     const { data } = await axios.get(`${process.env.REACT_APP_GET_CART}`, {
+  //       headers: {
+  //         Authorization: authToken,
+  //       },
+  //     });
+  //     setCart(data);
+  //   }
+  // };
 
   return (
     <>
@@ -54,7 +53,7 @@ const HomePage = () => {
         >
           <SearchBar />
         </Container>
-        
+
         {/* San pham moi */}
         <Typography
           variant="h3"
