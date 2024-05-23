@@ -3,7 +3,7 @@ import React from "react";
 
 const CopyRight = (props) => {
   return (
-    <p href="/" target="_blank" rel="noreferrer">
+    <div href="/" target="_blank" rel="noreferrer">
       <Typography
         variant="body1"
         fontWeight="bold"
@@ -18,7 +18,7 @@ const CopyRight = (props) => {
         {" © "}
         Phát triển bởi Quang Trung
       </Typography>
-    </p>
+    </div>
   );
 };
 

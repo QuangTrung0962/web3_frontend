@@ -23,9 +23,14 @@ import {
   handleClose,
 } from "../../Constants/Constant";
 import { AiFillCloseCircle, AiOutlineSave } from "react-icons/ai";
-import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
+import {
+  Web3Button,
+  useAddress,
+  useContract,
+  useContractWrite,
+} from "@thirdweb-dev/react";
 import { format } from "date-fns";
-//import { toWei } from "thirdweb-dev/sdk";
+import { ethers } from "ethers";
 
 const CheckoutForm = () => {
   const { cart, quantity } = useContext(ContextFunction);
@@ -54,51 +59,15 @@ const CheckoutForm = () => {
     }
   }, []);
 
-  const [userDetails, setUserDetails] = useState({
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    email: "",
-    province: "",
-    district: "",
-    ward: "",
-    detail: "",
-  });
-
   const getUserDetailData = async () => {
     try {
-      // const { data } = await axios.get(
-      //   `${process.env.REACT_APP_GET_USER_DETAILS}`,
-      //   {
-      //     headers: {
-      //       Authorization: authToken,
-      //     },
-      //   }
-      // );
-      // setUserData(data);
-
-      // if (!data.address || !data.city || !data.zipCode || !data.userState) {
-      //   setOpenAlert(true);
-      //   console.log(1);
-      // }
       getUser(address, setUserData);
-
-      // userDetails.firstName = userData.firstName;
-      // userDetails.lastName = userData.lastName;
-      // userDetails.email = userData.email;
-      // userDetails.phoneNumber = userData.phoneNumber;
-      // userDetails.province = userData.province;
-      // userDetails.district = userData.district;
-      // userDetails.ward = userData.ward;
-      // userDetails.detail = userData.detail;
     } catch (error) {
       console.log(error);
     }
   };
 
-  const checkOutHandler = async (e) => {
-    e.preventDefault();
-
+  const testFunc = async (contract) => {
     if (
       !userData.firstName ||
       !userData.lastName ||
@@ -114,44 +83,7 @@ const CheckoutForm = () => {
         theme: "colored",
       });
     } else {
-      //Call payment method
       try {
-        // const {
-        //   data: { key },
-        // } = await axios.get(`${process.env.REACT_APP_GET_KEY}`);
-        // const { data } = await axios.post(
-        //   `${process.env.REACT_APP_GET_CHECKOUT}`,
-        //   {
-        //     amount: totalAmount,
-        //     productDetails: JSON.stringify(cart),
-        //     userId: userData._id,
-        //     userDetails: JSON.stringify(userDetails),
-        //   }
-        // );
-        // const options = {
-        //   key: key,
-        //   amount: totalAmount,
-        //   currency: "INR",
-        //   name: userData.firstName + " " + userData.lastName,
-        //   description: "Payment",
-        //   image: profile,
-        //   order_id: data.order.id,
-        //   callback_url: process.env.REACT_APP_GET_PAYMENTVERIFICATION,
-        //   prefill: {
-        //     name: userData.firstName + " " + userData.lastName,
-        //     email: userData.email,
-        //     contact: userData.phoneNumber,
-        //   },
-        //   notes: {
-        //     address: `${userData.address} ${userData.city} ${userData.zipCode} ${userData.userState}`,
-        //   },
-        //   theme: {
-        //     color: "#1976d2",
-        //   },
-        // };
-        // const razor = new window.Razorpay(options);
-        // razor.open();
-
         const currentTime = new Date();
         const formattedTime = format(currentTime, "dd/MM/yyyy HH:mm:ss");
         const combinedData = cart.map((cartItem) => {
@@ -164,9 +96,14 @@ const CheckoutForm = () => {
             quantityItem ? quantityItem.quantity : 0, // Sử dụng 0 nếu không tìm thấy quantity
           ];
         });
-        await checkout({
-          args: [formattedTime, totalAmount, cart.length, combinedData],
-        });
+
+        await contract.call(
+          "checkout",
+          [formattedTime, totalAmount, cart.length, combinedData],
+          {
+            value: ethers.utils.parseEther("0.01"),
+          }
+        );
         toast.success("Thanh toán thành công", {
           autoClose: 500,
           theme: "colored",
@@ -179,8 +116,34 @@ const CheckoutForm = () => {
     }
   };
 
+  //e
+  // const checkOutHandler = async (e) => {
+  //   e.preventDefault();
+
+  //   if (
+  //     !userData.firstName ||
+  //     !userData.lastName ||
+  //     !userData.email ||
+  //     !userData.phoneNumber ||
+  //     !userData.province ||
+  //     !userData.district ||
+  //     !userData.ward ||
+  //     !userData.detail
+  //   ) {
+  //     toast.error("Hãy điền tất cả các trường", {
+  //       autoClose: 500,
+  //       theme: "colored",
+  //     });
+  //   } else {
+  //     //Call payment method
+  //     try {
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  // };
+
   const handleOnchange = (e) => {
-    //setUserDetails({ ...userDetails, [e.target.name]: e.target.value });
     setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
@@ -203,7 +166,7 @@ const CheckoutForm = () => {
           noValidate
           autoComplete="off"
           className={styles.checkout_form}
-          onSubmit={checkOutHandler}
+          //onSubmit={checkOutHandler}
         >
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
@@ -305,13 +268,23 @@ const CheckoutForm = () => {
                 Cập nhật
               </Button>
             </Link>
-            <Button
+            {/* <Button
               variant="contained"
               endIcon={<BsFillCartCheckFill />}
               type="submit"
             >
               Thanh toán
-            </Button>
+            </Button> */}
+
+            <Web3Button
+              contractAddress={CONTRACT_ORDER_ADDRESS}
+              action={(contract) => {
+                testFunc(contract);
+              }}
+              style={{ color: "#353535" }}
+            >
+              Thanh toán
+            </Web3Button>
           </Container>
         </form>
 

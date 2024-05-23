@@ -113,15 +113,13 @@ const DesktopNavigation = () => {
                 </li>
 
                 <li className="nav-links">
-                  <Tooltip title="Đăng nhập">
-                    <ConnectWallet
-                      theme={"light"}
-                      modalSize={"wide"}
-                      modalTitleIconUrl={""}
-                      showThirdwebBranding={false}
-                      style={{ marginRight: "5px" }}
-                    />
-                  </Tooltip>
+                  <ConnectWallet
+                    theme={"light"}
+                    modalSize={"wide"}
+                    modalTitleIconUrl={""}
+                    showThirdwebBranding={false}
+                    style={{ marginRight: "5px" }}
+                  />
                 </li>
               </>
             ) : (

@@ -78,9 +78,9 @@ const HomePage = () => {
           }}
         >
           {products &&
-            products.slice(0, 6).map((data) => (
+            products.slice(0, 6).map((data, index) => (
               //CategoryCardw  => san pham moi
-              <CategoryCard data={data} key={data.images[0]} />
+              <CategoryCard data={data} key={index} />
             ))}
         </Container>
       </Container>
