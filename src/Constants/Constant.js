@@ -57,9 +57,26 @@ const getAllProducts = async (setData) => {
 
 const getSingleProduct = async (setProduct, id, setLoading) => {
   const contract = await SDK.getContract(CONTRACT_PRODUCT_ADDRESS);
-  const data = await contract.call("getProductById", id);
+  const data = await contract.call("getProductById", [id.toString()]);
   setProduct(data);
   setLoading(false);
+};
+
+const handleRating = async (id, setRating) => {
+  const contractReview = await SDK.getContract(CONTRACT_REVIEW_ADDRESS);
+  const reviews = await contractReview.call("getReviewsByProductId", [id]);
+
+  if (reviews?.length === 0) {
+    return 0; // Nếu không có review nào, trả về 0
+  }
+
+  const totalRating = reviews?.reduce((sum, review) => {
+    return sum + parseInt(review.rating);
+  }, 0);
+
+  const averageRating = totalRating / reviews?.length;
+
+  setRating(averageRating);
 };
 
 const Transition = forwardRef(function Transition(props, ref) {
@@ -75,16 +92,19 @@ export {
   getAllProducts,
   getSingleProduct,
   Transition,
+  handleRating,
 };
 
 export const CONTRACT_PRODUCT_ADDRESS =
-  "0xaDa44A194A24a82c9Bfc13f5b6d112bF4d698Aa9";
+  "0x35c06c6595eB0d1E932A481AEfC8DC4752eDE96F";
 export const CONTRACT_CATEGORY_ADDRESS =
   "0xdd3Db257875352D8F60C1c635bC10adB8b71a7CD";
 export const CONTRACT_ORDER_ADDRESS =
-  "0x3e8bEC409B1ebA5b381f5d35D6D4EDd129B9c2e2";
+  "0xa334842df5D0a46483136C8C14e8A3D7eb9c3B20";
 export const CONTRACT_AUTH_ADDRESS =
-  "0xE9578b948129bf5d0e44747CD94aFf2cAFE6704F";
+  "0xf4B44c8858aae0179be511c4F6a1370eFeFF84eE";
+export const CONTRACT_REVIEW_ADDRESS =
+  "0x729C879Cb8dD1485F84624E58F7FeF0d2B6aC23D";
 
 export function bigNumberToString(productId) {
   if (productId?._isBigNumber) {
@@ -109,3 +129,15 @@ export const getUser = async (address, setUserData) => {
   const data = await contract.call("getUserByAddress", [address.toString()]);
   setUserData(data);
 };
+
+export function shortenAddress(address) {
+  // Kiểm tra xem chuỗi có phải là địa chỉ hợp lệ không
+  if (address.length < 10) {
+    return address; // Địa chỉ quá ngắn để rút gọn, trả về nguyên bản
+  }
+
+  const start = address.slice(0, 6); // Lấy 6 ký tự đầu tiên
+  const end = address.slice(-4); // Lấy 4 ký tự cuối cùng
+
+  return `${start}...${end}`; // Nối hai phần lại với dấu ba chấm ở giữa
+}

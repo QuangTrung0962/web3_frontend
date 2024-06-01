@@ -25,6 +25,9 @@ import { toast } from "react-toastify";
 import "./Review.css";
 import CommentCard from "../Card/Comment Card/CommentCard";
 import { customerReview } from "../../Assets/Images/Image";
+import { CONTRACT_REVIEW_ADDRESS, getReviews } from "../../Constants/Constant";
+import { useAddress, useContract } from "@thirdweb-dev/react";
+import { format } from "date-fns";
 
 const labels = {
   0: <MdOutlineSentimentVeryDissatisfied style={{ color: "red" }} />,
@@ -40,29 +43,47 @@ const labels = {
   5: <MdSentimentVerySatisfied style={{ color: "green" }} />,
 };
 
-function getLabelText(value) {
-  return `${value} Star${value !== 1 ? "s" : ""}, ${labels[value]}`;
-}
 const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
   const [value, setValue] = useState(0);
   const [hover, setHover] = useState("");
   const [reviews, setReviews] = useState([]);
   const [comment, setComment] = useState("");
-  const [filterOption, setFilterOption] = useState("All");
-  const [title, setTitle] = useState("All");
+  const [filterOption, setFilterOption] = useState("Tất cả");
+  const [title, setTitle] = useState("Tất cả");
+  const { contract } = useContract(CONTRACT_REVIEW_ADDRESS);
 
-  const commentFilter = [
-    "All",
-    "Most Recent",
-    "Old",
-    "Positive First",
-    "Negative First",
-  ];
+  const address = useAddress();
+  const commentFilter = ["Tất cả"];
+
+  useEffect(() => {
+    loadReviewsByProductId();
+  }, []);
+
+  useEffect(() => {
+    loadReviewsByProductId();
+  }, [reviews]);
+
+  // useEffect(() => {
+  //   //fetchReviews();
+  //   loadReviewsByProductId();
+  // }, [title, id]);
+
+  function getLabelText(value) {
+    return `${value} Star${value !== 1 ? "s" : ""}, ${labels[value]}`;
+  }
+
+  async function loadReviewsByProductId() {
+    const data = await contract.call("getReviewsByProductId", id);
+    setReviews(data);
+    // getReviews(setReviews, id);
+  }
+
   const handleChange = (e) => {
     setFilterOption(e.target.value.split(" ").join("").toLowerCase());
     setTitle(e.target.value);
     fetchReviews();
   };
+
   const fetchReviews = async () => {
     const filter = filterOption.toLowerCase();
     const { data } = await axios.post(
@@ -72,14 +93,10 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
     setReviews(data);
   };
 
-  useEffect(() => {
-    fetchReviews();
-  }, [title, id]);
-
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!comment && !value) {
-      toast.error("Please Fill the all Fields", {
+      toast.error("Hãy điền bình luận", {
         theme: "colored",
         autoClose: 500,
       });
@@ -89,21 +106,26 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
         autoClose: 500,
       });
     } else if (value <= 0) {
-      toast.error("Please add rating", { theme: "colored", autoClose: 500 });
+      toast.error("Hãy thêm sao đánh giá", {
+        theme: "colored",
+        autoClose: 500,
+      });
     } else if (comment.length >= 4 && value > 0) {
       try {
         if (setProceed) {
-          const { data } = await axios.post(
-            `${process.env.REACT_APP_ADD_REVIEW}`,
-            { id: id, comment: comment, rating: value },
-            {
-              headers: {
-                Authorization: authToken,
-              },
-            }
-          );
-          toast.success(data.msg, { theme: "colored", autoClose: 500 });
-          fetchReviews();
+          const currentTime = new Date();
+          const formattedTime = format(currentTime, "dd/MM/yyyy HH:mm");
+          await contract.call("addReview", [
+            address,
+            id,
+            value,
+            comment,
+            formattedTime,
+          ]);
+          toast.success("Bình luận thành công", {
+            theme: "colored",
+            autoClose: 500,
+          });
         } else {
           setOpenAlert(true);
         }
@@ -177,6 +199,7 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
             </Button>
           </Tooltip>
         </form>
+
         <div className="form-img-box">
           <img
             src={customerReview}
@@ -187,7 +210,7 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
         </div>
       </div>
 
-      {reviews.length >= 1 ? (
+      {reviews && reviews.length >= 1 ? (
         <Box
           sx={{
             display: "flex",
@@ -202,10 +225,11 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
             id="demo-simple-select"
             value={title}
             sx={{ width: 200 }}
-            onChange={handleChange}
+            onChange={(e) => handleChange(e)}
           >
-            {commentFilter.map((prod) => (
-              <MenuItem key={prod} value={prod}>
+            {/* Hiển thị filter */}
+            {commentFilter.map((prod, index) => (
+              <MenuItem key={index} value={prod}>
                 {prod}
               </MenuItem>
             ))}
@@ -217,17 +241,22 @@ const ProductReview = ({ authToken, setProceed, setOpenAlert, id }) => {
           đầu tiên!
         </Typography>
       )}
+      {/* Hiển thị bình luận */}
       <Box className="review-box">
-        {reviews.map((review) => (
-          <CommentCard
-            userReview={review}
-            key={review._id}
-            authToken={authToken}
-            setReviews={setReviews}
-            reviews={reviews}
-            fetchReviews={fetchReviews}
-          />
-        ))}
+        {reviews.map(
+          (review) =>
+            review.time !== "" && (
+              <CommentCard
+                userReview={review}
+                key={review.id}
+                authToken={authToken}
+                setReviews={setReviews}
+                reviews={reviews}
+                fetchReviews={fetchReviews}
+                loadReviews={loadReviewsByProductId}
+              />
+            )
+        )}
       </Box>
     </>
   );

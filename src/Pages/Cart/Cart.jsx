@@ -231,33 +231,6 @@ const Cart = () => {
         </Container>
       </Container>
 
-      {/* {setProceed && previousOrder.length > 0 && (
-        <Typography variant="h6" sx={{ textAlign: "center", margin: "5px 0" }}>
-          Previous Orders
-        </Typography>
-      )} */}
-      {/* <Container
-        maxWidth="xl"
-        style={{
-          marginTop: 10,
-          display: "flex",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          paddingBottom: 20,
-        }}
-      >
-        {previousOrder.map((product) =>
-          product.productData.map((prod) => (
-            <Link
-              to={`/Detail/type/${prod.productId.type}/${prod.productId._id}`}
-              key={prod._id}
-            >
-              <ProductCard prod={prod.productId} />
-            </Link>
-          ))
-        )}
-      </Container> */}
-
       <Dialog
         open={openAlert}
         keepMounted

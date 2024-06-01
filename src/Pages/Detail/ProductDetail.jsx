@@ -12,11 +12,10 @@ import {
   DialogContent,
   DialogContentText,
   Chip,
-  Rating,
   ButtonGroup,
   Skeleton,
-  IconButton,
 } from "@mui/material";
+import { Rating } from "@mui/material";
 import { MdAddShoppingCart } from "react-icons/md";
 import {
   AiFillHeart,
@@ -25,14 +24,13 @@ import {
   AiOutlineShareAlt,
 } from "react-icons/ai";
 import { TbDiscount2 } from "react-icons/tb";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { ContextFunction } from "../../Context/Context";
 import ProductReview from "../../Components/Review/ProductReview";
-import ProductCard from "../../Components/Card/Product Card/ProductCard";
 import {
   Transition,
   getSingleProduct,
+  handleRating,
   numberWithCommas,
 } from "../../Constants/Constant";
 import CopyRight from "../../Components/CopyRight/CopyRight";
@@ -50,57 +48,34 @@ const ProductDetail = () => {
   const [openAlert, setOpenAlert] = useState(false);
   const { id, cat } = useParams();
   const [product, setProduct] = useState([]);
-  const [similarProduct, setSimilarProduct] = useState([]);
   const [productQuantity, setProductQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [rating, setRating] = useState(0);
 
   let authToken = localStorage.getItem("Authorization");
   let setProceed = authToken ? true : false;
   const address = useAddress();
   address !== undefined ? (setProceed = true) : (setProceed = false);
 
+  console.log("object", id);
+  useEffect(() => {
+    handleRating(id, setRating);
+  }, []);
+
   useEffect(() => {
     getSingleProduct(setProduct, id, setLoading);
-
-    //getSimilarProducts();
     window.scroll(0, 0);
   }, [id]);
 
   const addToCart = async (product) => {
     if (setProceed) {
       try {
-        // const { data } = await axios.post(
-        //   `${process.env.REACT_APP_ADD_CART}`,
-        //   { _id: product._id, quantity: productQuantity },
-        //   {
-        //     headers: {
-        //       Authorization: authToken,
-        //     },
-        //   }
-        // );
-        // setCart(data);
-
         setCart([...cart, product]);
 
         setQuantity([
           ...quantity,
           { id: product.id.toString(), quantity: productQuantity },
         ]);
-
-        // setQuantity((prevQuantity) => {
-        //   // Kiểm tra nếu prevQuantity không phải là mảng, khởi tạo nó thành mảng rỗng
-        //   if (!Array.isArray(prevQuantity)) {
-        //     prevQuantity = [];
-        //   }
-        //   return [
-        //     ...prevQuantity,
-        //     {
-        //       id: product.id.toString(),
-        //       quantity: productQuantity,
-        //     },
-        //   ];
-        // });
-
         toast.success("Thêm vào giỏ hàng", {
           autoClose: 500,
           theme: "colored",
@@ -119,17 +94,6 @@ const ProductDetail = () => {
   const addToWhishList = async (product) => {
     if (setProceed) {
       try {
-        // const { data } = await axios.post(
-        //   `${process.env.REACT_APP_ADD_WISHLIST}`,
-        //   { _id: product._id },
-        //   {
-        //     headers: {
-        //       Authorization: authToken,
-        //     },
-        //   }
-        // );
-        //setWishlistData(data);
-
         setWishlistData([...wishlistData, product]);
 
         toast.success("Thêm vào yêu thích", {
@@ -160,12 +124,6 @@ const ProductDetail = () => {
     }
   };
 
-  const getSimilarProducts = async () => {
-    const { data } = await axios.post(`${process.env.REACT_APP_PRODUCT_TYPE}`, {
-      userType: cat,
-    });
-    setSimilarProduct(data);
-  };
   let data = [];
   if (cat === "shoe") {
     data.push(product?.brand, product?.gender, product?.category);
@@ -313,12 +271,7 @@ const ProductDetail = () => {
                   <Button onClick={decreaseQuantity}>-</Button>
                 </ButtonGroup>
               </Box>
-              <Rating
-                name="read-only"
-                value={Math.round(product.rating)}
-                readOnly
-                precision={0.5}
-              />
+              <Rating precision={1} name="read-only" value={rating} readOnly />
               <div style={{ display: "flex" }}>
                 <Tooltip title="Mua hàng">
                   <Button
@@ -356,41 +309,14 @@ const ProductDetail = () => {
             </section>
           )}
         </main>
-        
+
+        {/* PRODUCT REVIEW  */}
         <ProductReview
           setProceed={setProceed}
           authToken={authToken}
           id={id}
           setOpenAlert={setOpenAlert}
         />
-
-        <Typography
-          sx={{
-            marginTop: 10,
-            marginBottom: 5,
-            fontWeight: "bold",
-            textAlign: "center",
-          }}
-        >
-          Sản phẩm tương tự
-        </Typography>
-        <Box>
-          <Box
-            className="similarProduct"
-            sx={{ display: "flex", overflowX: "auto", marginBottom: 10 }}
-          >
-            {similarProduct
-              .filter((prod) => prod._id !== id)
-              .map((prod) => (
-                <Link
-                  to={`/Detail/type/${prod.type}/${prod._id}`}
-                  key={prod._id}
-                >
-                  <ProductCard prod={prod} />
-                </Link>
-              ))}
-          </Box>
-        </Box>
       </Container>
       <CopyRight sx={{ mt: 8, mb: 10 }} />
     </>

@@ -1,7 +1,6 @@
 import "./singlecategory.css";
 import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import axios from "axios";
 import { Container } from "@mui/system";
 import { Box, Button, MenuItem, FormControl, Select } from "@mui/material";
 import Loading from "../Components/loading/Loading";
@@ -10,7 +9,7 @@ import ProductCard from "../Components/Card/Product Card/ProductCard";
 import CopyRight from "../Components/CopyRight/CopyRight";
 
 //
-import { useContractRead, useContract } from "@thirdweb-dev/react";
+import { useContract } from "@thirdweb-dev/react";
 import { CONTRACT_PRODUCT_ADDRESS } from "../Constants/Constant";
 
 const SingleCategory = () => {
@@ -21,26 +20,30 @@ const SingleCategory = () => {
   const { cat, id } = useParams();
 
   const { contract } = useContract(CONTRACT_PRODUCT_ADDRESS);
-  const { data: products } = useContractRead(
-    contract,
-    "getProductByCategoryId",
-    [id]
-  );
+  // const { data: products } = useContractRead(
+  //   contract,
+  //   "getProductByCategoryId",
+  //   [id]
+  // );
 
   useEffect(() => {
     getCategoryProduct();
     window.scroll(0, 0);
   }, []);
 
+  useEffect(() => {
+    if (productData !== undefined) {
+      getData();
+    }
+  }, [title]);
+
   const getCategoryProduct = async () => {
     try {
       //cat = Samsung
       setIsLoading(true);
-
-      if (products != null) {
-        setIsLoading(false);
-        setProductData(products);
-      }
+      const data = await contract.call("getProductByCategoryId", id);
+      setProductData(data);
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -49,13 +52,7 @@ const SingleCategory = () => {
   const productFilter = [];
 
   if (cat !== "") {
-    productFilter.push(
-      "Tất cả",
-      "Giá từ thấp đến cao",
-      "Giá từ cao đến thấp",
-      "Đánh giá cao",
-      "Đánh giá thấp"
-    );
+    productFilter.push("Tất cả", "Giá từ thấp đến cao", "Giá từ cao đến thấp");
   }
 
   const handleChange = (e) => {
@@ -63,20 +60,41 @@ const SingleCategory = () => {
     setTitle(e.target.value);
   };
 
+  // const getData = async () => {
+  //   setIsLoading(true);
+  //   const filter = filterOption.toLowerCase();
+
+  //   setProductData(products);
+  //   setIsLoading(false);
+  // };
+
   const getData = async () => {
     setIsLoading(true);
     const filter = filterOption.toLowerCase();
-    // const { data } = await axios.post(
-    //   `${process.env.REACT_APP_PRODUCT_TYPE_CATEGORY_}`,
-    //   { userType: cat, userCategory: filter }
-    // );
-    setProductData(products);
+    let filteredProducts = [...productData]; // Tạo bản sao của products
+
+    switch (filter) {
+      case "tấtcả":
+        filteredProducts = [...productData];
+        break;
+      case "giátừthấpđếncao":
+        filteredProducts = [...productData].sort(
+          (a, b) => parseInt(a.price) - parseInt(b.price)
+        );
+        break;
+      case "giátừcaođếnthấp":
+        filteredProducts = [...productData].sort(
+          (a, b) => parseInt(b.price) - parseInt(a.price)
+        );
+        break;
+      default:
+        // Lựa chọn lọc không hợp lệ
+        break;
+    }
+
+    setProductData(filteredProducts);
     setIsLoading(false);
   };
-
-  useEffect(() => {
-    getData();
-  }, [filterOption]);
 
   const loading = isLoading ? (
     <Container
@@ -123,7 +141,7 @@ const SingleCategory = () => {
                 width: "80vw",
               }}
             >
-              <Button endIcon={<BiFilterAlt />}>Filters</Button>
+              <Button endIcon={<BiFilterAlt />}>Lọc theo</Button>
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
@@ -153,12 +171,12 @@ const SingleCategory = () => {
             width: "100%",
           }}
         >
-          {products &&
-            products
+          {productData &&
+            productData
               .filter((prod) => prod.productName !== "")
               .map((prod) => (
                 <Link to={`/Detail/type/${cat}/${prod.id}`} key={prod.id}>
-                  <ProductCard prod={prod} />
+                  <ProductCard prod={prod} id={prod.id} />
                 </Link>
               ))}
         </Container>

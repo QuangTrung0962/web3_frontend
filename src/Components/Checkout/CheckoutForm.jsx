@@ -24,10 +24,8 @@ import {
 } from "../../Constants/Constant";
 import { AiFillCloseCircle, AiOutlineSave } from "react-icons/ai";
 import {
-  Web3Button,
   useAddress,
   useContract,
-  useContractWrite,
 } from "@thirdweb-dev/react";
 import { format } from "date-fns";
 import { ethers } from "ethers";
@@ -44,12 +42,12 @@ const CheckoutForm = () => {
 
   const address = useAddress();
   address !== undefined ? (setProceed = true) : (setProceed = false);
-  const { contract } = useContract(CONTRACT_ORDER_ADDRESS);
-  const {
-    mutateAsync: checkout,
-    isSuccess: createOrderSuccess,
-    isError,
-  } = useContractWrite(contract, "checkout");
+  const { contract: contractOrder } = useContract(CONTRACT_ORDER_ADDRESS);
+  // const {
+  //   mutateAsync: checkout,
+  //   isSuccess: createOrderSuccess,
+  //   isError,
+  // } = useContractWrite(contract, "checkout");
 
   useEffect(() => {
     if (setProceed) {
@@ -67,7 +65,7 @@ const CheckoutForm = () => {
     }
   };
 
-  const testFunc = async (contract) => {
+  const checkOutFunc = async () => {
     if (
       !userData.firstName ||
       !userData.lastName ||
@@ -97,11 +95,14 @@ const CheckoutForm = () => {
           ];
         });
 
-        await contract.call(
+        await contractOrder.call(
           "checkout",
           [formattedTime, totalAmount, cart.length, combinedData],
           {
-            value: ethers.utils.parseEther("0.01"),
+            // value: ethers.utils.parseEther(
+            //   (totalAmount / 100000000).toString()
+            // ),
+            value: ethers.utils.parseEther("0.0001"),
           }
         );
         toast.success("Thanh toán thành công", {
@@ -136,6 +137,7 @@ const CheckoutForm = () => {
   //     });
   //   } else {
   //     //Call payment method
+
   //     try {
   //     } catch (error) {
   //       console.log(error);
@@ -162,131 +164,121 @@ const CheckoutForm = () => {
         <Typography variant="h5" sx={{ margin: "20px 0" }}>
           Thanh toán
         </Typography>
-        <form
+        {/* <form
           noValidate
           autoComplete="off"
           className={styles.checkout_form}
           //onSubmit={checkOutHandler}
-        >
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                // inputProps={{ readOnly: true }}
-                // disabled
-                label="Tên"
-                name="firstName"
-                value={userData.firstName || ""}
-                onChange={handleOnchange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Họ đệm"
-                name="lastName"
-                value={userData.lastName || ""}
-                onChange={handleOnchange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="SĐT"
-                type="tel"
-                name="phoneNumber"
-                value={userData.phoneNumber || ""}
-                onChange={handleOnchange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Email"
-                name="email"
-                value={userData.email || ""}
-                onChange={handleOnchange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                label="Tỉnh/Thành phố"
-                name="province"
-                value={userData.province || ""}
-                onChange={handleOnchange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Quận/Huyện"
-                name="district"
-                value={userData.district || ""}
-                onChange={handleOnchange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                type="tel"
-                label="Phường/Xã"
-                name="ward"
-                value={userData.ward || ""}
-                onChange={handleOnchange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Địa chỉ chi tiết"
-                name="detail"
-                value={userData.detail || ""}
-                onChange={handleOnchange}
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
+        > */}
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              // inputProps={{ readOnly: true }}
+              // disabled
+              label="Tên"
+              name="firstName"
+              value={userData.firstName || ""}
+              onChange={handleOnchange}
+              variant="outlined"
+              fullWidth
+            />
           </Grid>
-          <Container
-            sx={{
-              display: "flex",
-              gap: 10,
-              justifyContent: "center",
-              marginTop: 5,
-            }}
-          >
-            <Link to="/update">
-              <Button variant="contained" endIcon={<MdUpdate />}>
-                Cập nhật
-              </Button>
-            </Link>
-            {/* <Button
-              variant="contained"
-              endIcon={<BsFillCartCheckFill />}
-              type="submit"
-            >
-              Thanh toán
-            </Button> */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Họ đệm"
+              name="lastName"
+              value={userData.lastName || ""}
+              onChange={handleOnchange}
+              variant="outlined"
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="SĐT"
+              type="tel"
+              name="phoneNumber"
+              value={userData.phoneNumber || ""}
+              onChange={handleOnchange}
+              variant="outlined"
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Email"
+              name="email"
+              value={userData.email || ""}
+              onChange={handleOnchange}
+              variant="outlined"
+              fullWidth
+            />
+          </Grid>
 
-            <Web3Button
-              contractAddress={CONTRACT_ORDER_ADDRESS}
-              action={(contract) => {
-                testFunc(contract);
-              }}
-              style={{ color: "#353535" }}
-            >
-              Thanh toán
-            </Web3Button>
-          </Container>
-        </form>
+          <Grid item xs={12}>
+            <TextField
+              label="Tỉnh/Thành phố"
+              name="province"
+              value={userData.province || ""}
+              onChange={handleOnchange}
+              variant="outlined"
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Quận/Huyện"
+              name="district"
+              value={userData.district || ""}
+              onChange={handleOnchange}
+              variant="outlined"
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              type="tel"
+              label="Phường/Xã"
+              name="ward"
+              value={userData.ward || ""}
+              onChange={handleOnchange}
+              variant="outlined"
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Địa chỉ chi tiết"
+              name="detail"
+              value={userData.detail || ""}
+              onChange={handleOnchange}
+              variant="outlined"
+              fullWidth
+            />
+          </Grid>
+        </Grid>
+        <Container
+          sx={{
+            display: "flex",
+            gap: 10,
+            justifyContent: "center",
+            marginTop: 5,
+          }}
+        >
+          <Link to="/update">
+            <Button variant="contained" endIcon={<MdUpdate />}>
+              Cập nhật
+            </Button>
+          </Link>
+          <Button
+            variant="contained"
+            endIcon={<BsFillCartCheckFill />}
+            onClick={() => checkOutFunc()}
+          >
+            Thanh toán
+          </Button>
+        </Container>
+        {/* </form> */}
 
         <Dialog
           open={openAlert}

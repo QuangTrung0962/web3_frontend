@@ -8,9 +8,21 @@ import {
 } from "@mui/material";
 import { Box } from "@mui/system";
 import styles from "./ProductCard.module.css";
-import { numberWithCommas } from "../../../Constants/Constant";
+import {
+  CONTRACT_REVIEW_ADDRESS,
+  handleRating,
+  numberWithCommas,
+} from "../../../Constants/Constant";
+import { useContract, useContractRead } from "@thirdweb-dev/react";
+import { useEffect, useState } from "react";
 
-export default function ProductCard({ prod }) {
+export default function ProductCard({ prod, id }) {
+  const [rating, setRating] = useState(0);
+
+  useEffect(() => {
+    handleRating(id, setRating);
+  }, []);
+
   return (
     <Card className={styles.main_card}>
       <CardActionArea className={styles.card_action}>
@@ -41,12 +53,7 @@ export default function ProductCard({ prod }) {
           {numberWithCommas(prod.price.toString())}₫
         </Typography>
         <Typography>
-          <Rating
-            precision={0.5}
-            name="read-only"
-            value={prod.rating}
-            readOnly
-          />
+          <Rating precision={1} name="read-only" value={rating} readOnly />
         </Typography>
       </CardActions>
     </Card>

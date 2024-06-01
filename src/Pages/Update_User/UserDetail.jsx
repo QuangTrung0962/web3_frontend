@@ -37,7 +37,7 @@ const UserDetail = () => {
 
   const address = useAddress();
   address !== undefined ? (setProceed = true) : (setProceed = false);
-  const [checkUser, setCheckUser] = useState();
+
   const [openOrderId, setOpenOrderId] = useState("");
   const [products, setProducts] = useState([]);
 
@@ -51,7 +51,6 @@ const UserDetail = () => {
   useEffect(() => {
     if (setProceed) {
       getUserData();
-      getUser(address, setCheckUser);
     } else {
       navigate("/");
     }
@@ -75,24 +74,26 @@ const UserDetail = () => {
     if (reversedOrders?.length > 0) {
       fetchProducts();
     }
+    //reversedOrders
   }, [reversedOrders]);
+
+  const getSingleProduct = async (id) => {
+    const SDK = new ThirdwebSDK("sepolia");
+    const contract = await SDK.getContract(CONTRACT_PRODUCT_ADDRESS);
+    const data = await contract.call("getProductById", [id.toString()]);
+    return data;
+  };
 
   const getUserData = async () => {
     try {
       getUser(address, setUserData);
+      console.log(userData);
     } catch (error) {
       toast.error("Something went wrong", { autoClose: 500, theme: "colored" });
     }
   };
   const handleOnchange = (e) => {
     setUserData({ ...userData, [e.target.name]: e.target.value });
-  };
-
-  const getSingleProduct = async (id) => {
-    const SDK = new ThirdwebSDK("sepolia");
-    const contract = await SDK.getContract(CONTRACT_PRODUCT_ADDRESS);
-    const data = await contract.call("getProductById", id.toString());
-    return data;
   };
 
   return (

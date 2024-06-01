@@ -12,9 +12,16 @@ import { Box } from "@mui/system";
 import { Link } from "react-router-dom";
 import { AiFillDelete } from "react-icons/ai";
 import styles from "./CartCard.module.css";
-import { numberWithCommas } from "../../../Constants/Constant";
+import { handleRating, numberWithCommas } from "../../../Constants/Constant";
+import { useEffect, useState } from "react";
 
 const CartCard = ({ product, removeFromCart, quantity }) => {
+  const [rating, setRating] = useState(0);
+
+  useEffect(() => {
+    handleRating(product?.id, setRating);
+  }, []);
+
   //Check quantity
   const matchingItem = quantity?.find(
     (item) => item.id === product.id.toString()
@@ -87,13 +94,7 @@ const CartCard = ({ product, removeFromCart, quantity }) => {
           </Button>
         </Tooltip>
         <Typography>
-          {" "}
-          <Rating
-            name="read-only"
-            value={Math.round(product?.productId?.rating)}
-            readOnly
-            precision={0.5}
-          />
+          <Rating name="read-only" value={rating} readOnly precision={0.5} />
         </Typography>
       </CardActions>
     </Card>
