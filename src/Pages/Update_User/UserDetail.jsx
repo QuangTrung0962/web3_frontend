@@ -15,7 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { AiOutlineFileDone } from "react-icons/ai";
+import { AiFillDelete, AiOutlineFileDone } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import styles from "./Update.module.css";
 import { toast } from "react-toastify";
@@ -27,7 +27,12 @@ import {
   numberWithCommas,
 } from "../../Constants/Constant";
 import CopyRight from "../../Components/CopyRight/CopyRight";
-import { useAddress, useContract, useContractRead } from "@thirdweb-dev/react";
+import {
+  Web3Button,
+  useAddress,
+  useContract,
+  useContractRead,
+} from "@thirdweb-dev/react";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 
@@ -44,8 +49,8 @@ const UserDetail = () => {
   const { contract: contractOrder } = useContract(CONTRACT_ORDER_ADDRESS);
 
   const { data: orders } = useContractRead(contractOrder, "getAllOrders");
-  const filteredOrders = orders?.filter((order) => order.user === address);
-  const reversedOrders = filteredOrders ? [...filteredOrders].reverse() : [];
+  let filteredOrders = orders?.filter((order) => order.user === address);
+  let reversedOrders = filteredOrders ? [...filteredOrders].reverse() : [];
 
   let navigate = useNavigate();
   useEffect(() => {
@@ -75,7 +80,7 @@ const UserDetail = () => {
       fetchProducts();
     }
     //reversedOrders
-  }, [reversedOrders]);
+  }, [orders]);
 
   const getSingleProduct = async (id) => {
     const SDK = new ThirdwebSDK("sepolia");
@@ -84,10 +89,17 @@ const UserDetail = () => {
     return data;
   };
 
+  const deleteOrder = async (id) => {
+    await contractOrder.call("delelteOrder", [id.toString()]);
+    toast.success("Yều cầu hủy đơn thành công", {
+      autoClose: 500,
+      theme: "colored",
+    });
+  };
+
   const getUserData = async () => {
     try {
       getUser(address, setUserData);
-      console.log(userData);
     } catch (error) {
       toast.error("Something went wrong", { autoClose: 500, theme: "colored" });
     }
@@ -288,6 +300,21 @@ const UserDetail = () => {
                             {numberWithCommas(order.total.toString())}đ
                           </p>
                         </TableCell>
+
+                        {order.status === "" && (
+                          <TableCell>
+                            <Button
+                              className="all-btn"
+                              sx={{ width: 120 }}
+                              variant="contained"
+                              color="error"
+                              onClick={() => deleteOrder(order.id)}
+                            >
+                              <AiFillDelete style={{ fontSize: 15 }} />
+                              Hủy đơn
+                            </Button>
+                          </TableCell>
+                        )}
                       </TableRow>
                       <TableRow>
                         <TableCell

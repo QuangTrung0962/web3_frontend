@@ -23,10 +23,7 @@ import {
   handleClose,
 } from "../../Constants/Constant";
 import { AiFillCloseCircle, AiOutlineSave } from "react-icons/ai";
-import {
-  useAddress,
-  useContract,
-} from "@thirdweb-dev/react";
+import { useAddress, useContract } from "@thirdweb-dev/react";
 import { format } from "date-fns";
 import { ethers } from "ethers";
 
@@ -99,10 +96,10 @@ const CheckoutForm = () => {
           "checkout",
           [formattedTime, totalAmount, cart.length, combinedData],
           {
-            // value: ethers.utils.parseEther(
-            //   (totalAmount / 100000000).toString()
-            // ),
-            value: ethers.utils.parseEther("0.0001"),
+            value: ethers.utils.parseEther(
+              (totalAmount / 100000000).toString()
+            ),
+            // value: ethers.utils.parseEther("0.0001"),
           }
         );
         toast.success("Thanh toán thành công", {

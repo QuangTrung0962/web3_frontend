@@ -35,6 +35,7 @@ function App() {
   return (
     <>
       <ThirdwebProvider
+        autoConnect={false}
         activeChain={activeChain}
         clientId={process.env.NEXT_PUBLIC_CLIENT_ID}
         supportedWallets={[
